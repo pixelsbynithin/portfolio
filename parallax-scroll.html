@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>GSAP Scroll Cards</title>
+
+<!-- GSAP + ScrollTrigger -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet" />
+
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ink:    #0a0a0f;
+    --cream:  #f2ede6;
+    --accent: #e84f2b;
+    --muted:  #9a9490;
+    --card-h: 420px;
+  }
+
+  html { font-size: 16px; }
+
+  body {
+    background: var(--ink);
+    color: var(--cream);
+    font-family: 'DM Sans', sans-serif;
+    overflow: hidden; /* body scroll hidden — we drive it programmatically */
+    height: 100vh;
+  }
+
+  /* ── Header ───────────────────────────────────────────── */
+  header {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 22px 40px;
+    pointer-events: none;
+  }
+  .logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.6rem;
+    letter-spacing: .12em;
+    color: var(--cream);
+  }
+  .logo span { color: var(--accent); }
+  .header-tag {
+    font-size: .7rem;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  /* ── Progress bar ─────────────────────────────────────── */
+  #progress-bar {
+    position: fixed;
+    top: 0; left: 0;
+    height: 2px;
+    width: 0%;
+    background: var(--accent);
+    z-index: 200;
+    transform-origin: left;
+  }
+
+  /* ── Main fixed viewport container ───────────────────── */
+  /* #main-container {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+  } */
+
+  /* ── Inner scrollable panel ───────────────────────────── */
+  #inner-container {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    /* height is set by JS to (cards × row-height) + viewport */
+    will-change: transform;
+  }
+
+  /* ── Intro hero ───────────────────────────────────────── */
+  #hero {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 0 40px 60px;
+    position: relative;
+    overflow: hidden;
+  }
+  #hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 70% 60% at 75% 40%, rgba(232,79,43,.13), transparent),
+      radial-gradient(ellipse 50% 80% at 20% 80%, rgba(80,60,255,.06), transparent);
+  }
+  .hero-eyebrow {
+    font-size: .72rem;
+    letter-spacing: .3em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 14px;
+    opacity: 0;
+  }
+  .hero-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(4rem, 9vw, 8.5rem);
+    line-height: .92;
+    letter-spacing: -.01em;
+    color: var(--cream);
+    overflow: hidden;
+    opacity: 0;
+  }
+  .hero-title em { color: var(--accent); font-style: normal; }
+  .hero-sub {
+    margin-top: 24px;
+    max-width: 380px;
+    font-size: .95rem;
+    font-weight: 300;
+    line-height: 1.65;
+    color: var(--muted);
+    opacity: 0;
+  }
+  .scroll-hint {
+    position: absolute;
+    bottom: 28px; right: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    font-size: .65rem;
+    letter-spacing: .25em;
+    text-transform: uppercase;
+    color: var(--muted);
+    opacity: 0;
+  }
+  .scroll-hint-line {
+    width: 1px;
+    height: 48px;
+    background: linear-gradient(to bottom, var(--accent), transparent);
+    animation: nudge 1.8s ease-in-out infinite;
+  }
+  @keyframes nudge {
+    0%,100% { transform: scaleY(1); opacity:.8; }
+    50%      { transform: scaleY(.6) translateY(10px); opacity:.3; }
+  }
+
+  /* ── Cards grid ───────────────────────────────────────── */
+  #cards-section {
+    padding: 0 40px 160px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 24px;
+  }
+
+  /* ── Individual card ──────────────────────────────────── */
+  .card {
+    position: relative;
+    height: var(--card-h);
+    border-radius: 4px;
+    overflow: hidden;
+    cursor: pointer;
+    will-change: transform;
+    transform: scale(.7) translateY(60px);
+    opacity: 0;
+  }
+
+  /* parallax layer inside each card */
+  .card-bg {
+    position: absolute;
+    inset: -14% -6%;        /* oversized so it can shift without gaps */
+    background-size: cover;
+    background-position: center;
+    will-change: transform;
+    transition: transform .05s linear;
+    filter: brightness(.72) saturate(1.1);
+  }
+
+  /* noise grain overlay */
+  .card-bg::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='.08'/%3E%3C/svg%3E");
+    opacity: .45;
+    mix-blend-mode: overlay;
+    pointer-events: none;
+  }
+
+  /* gradient vignette */
+  .card-vignette {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      160deg,
+      transparent 35%,
+      rgba(10,10,15,.75) 100%
+    );
+  }
+
+  /* card content */
+  .card-body {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    padding: 24px 26px 28px;
+    z-index: 2;
+    transform: translateY(8px);
+    will-change: transform;
+  }
+  .card-tag {
+    font-size: .62rem;
+    letter-spacing: .3em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 8px;
+    display: inline-block;
+  }
+  .card-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.05rem;
+    line-height: 1.0;
+    letter-spacing: .03em;
+    color: var(--cream);
+    margin-bottom: 10px;
+  }
+  .card-desc {
+    font-size: .8rem;
+    font-weight: 300;
+    line-height: 1.6;
+    color: rgba(242,237,230,.65);
+    max-width: 280px;
+  }
+  .card-arrow {
+    position: absolute;
+    top: 22px; right: 22px;
+    width: 38px; height: 38px;
+    border: 1px solid rgba(242,237,230,.2);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--cream);
+    font-size: 1rem;
+    transition: background .25s, border-color .25s;
+    z-index: 3;
+  }
+  .card:hover .card-arrow {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+  .card:hover .card-bg {
+    filter: brightness(.82) saturate(1.2);
+  }
+
+  /* ── Section label ────────────────────────────────────── */
+  .section-header {
+    padding: 80px 0 32px;
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: baseline;
+    gap: 20px;
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  .section-label {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 3.2rem;
+    letter-spacing: .04em;
+    color: var(--cream);
+    line-height: 1;
+  }
+  .section-num {
+    font-size: .7rem;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+  .section-line {
+    flex: 1;
+    height: 1px;
+    background: rgba(242,237,230,.1);
+  }
+
+  /* ── Wide feature card ────────────────────────────────── */
+  .card.wide {
+    grid-column: 1 / -1;
+    height: 320px;
+  }
+
+  /* ── Custom scrollbar (hidden) ────────────────────────── */
+  ::-webkit-scrollbar { display: none; }
+
+  /* ── Cursor dot ───────────────────────────────────────── */
+  #cursor {
+    position: fixed;
+    width: 10px; height: 10px;
+    background: var(--accent);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9999;
+    mix-blend-mode: difference;
+    transform: translate(-50%,-50%);
+    transition: width .15s, height .15s, opacity .15s;
+  }
+  #cursor.hovering { width: 34px; height: 34px; opacity: .7; }
+</style>
+</head>
+<body>
+
+<!-- Progress -->
+<div id="progress-bar"></div>
+
+<!-- Custom cursor -->
+<div id="cursor"></div>
+
+<!-- Header -->
+<header>
+  <div class="logo">SCROLL<span>FX</span></div>
+  <div class="header-tag">GSAP · ScrollTrigger · Parallax</div>
+</header>
+
+<!-- Fixed main container -->
+<div id="main-container">
+  <div id="inner-container">
+
+    <!-- Hero -->
+    <!-- <section id="hero">
+      <p class="hero-eyebrow">Scroll to explore</p>
+      <h1 class="hero-title">MOTION<br>IN <em>DEPTH</em></h1>
+      <p class="hero-sub">
+        Each card emerges from rest—scaling, breathing, shifting with the physics of real momentum.
+      </p>
+      <div class="scroll-hint">
+        <div class="scroll-hint-line"></div>
+        Scroll
+      </div>
+    </section> -->
+
+    <!-- Cards -->
+    <div id="cards-section">
+      <!-- section header injected by JS -->
+    </div>
+
+  </div>
+</div>
+
+<!-- Invisible scroll proxy (full height, off-screen) -->
+<div id="scroll-proxy" style="position:fixed;top:0;left:0;width:1px;pointer-events:none;"></div>
+
+<script>
+/* ──────────────────────────────────────────────────────────
+   DATA
+────────────────────────────────────────────────────────── */
+const CARDS = [
+  {
+    tag: "Motion Design",
+    title: "KINETIC ENERGY",
+    desc: "Objects in motion stay in motion. Smooth transitions reward the eye with spatial continuity.",
+    bg: "https://images.unsplash.com/photo-1518895949257-7621c3c786d7?w=900&q=80",
+    wide: false
+  },
+  {
+    tag: "Interaction",
+    title: "TACTILE FEEDBACK",
+    desc: "Every scroll tick is a conversation between intent and interface.",
+    bg: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=900&q=80",
+    wide: false
+  },
+  {
+    tag: "Featured",
+    title: "DEPTH OF FIELD — THE PARALLAX PRINCIPLE",
+    desc: "Layered motion creates the illusion of three-dimensional space on a flat screen.",
+    bg: "https://images.unsplash.com/photo-1536152470836-b943b246224c?w=1400&q=80",
+    wide: true
+  },
+  {
+    tag: "Atmosphere",
+    title: "AMBIENT LIGHT",
+    desc: "Colour temperature shifts guide the eye and carry emotional weight through a composition.",
+    bg: "https://images.unsplash.com/photo-1501820488136-72669149e0d4?w=900&q=80",
+    wide: false
+  },
+  {
+    tag: "Transition",
+    title: "SCALE & REVEAL",
+    desc: "Cards enter the viewport at 0.7× scale, growing to full size—a breath of life.",
+    bg: "https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07?w=900&q=80",
+    wide: false
+  },
+  {
+    tag: "Texture",
+    title: "GRAIN & NOISE",
+    desc: "A film-grain overlay softens the harshness of digital edges into something organic.",
+    bg: "https://images.unsplash.com/photo-1518173946687-a4c8892bbd9f?w=900&q=80",
+    wide: false
+  },
+  {
+    tag: "Geometry",
+    title: "NEGATIVE SPACE",
+    desc: "What surrounds a form defines it. Generous margins give every element room to breathe.",
+    bg: "https://images.unsplash.com/photo-1505765050516-f72dcac9c60e?w=900&q=80",
+    wide: false
+  },
+  {
+    tag: "Finale",
+    title: "THE LAST FRAME",
+    desc: "A closing card — crisp, definitive, memorable. The punctuation of a visual sentence.",
+    bg: "https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?w=900&q=80",
+    wide: false
+  },
+];
+
+/* ──────────────────────────────────────────────────────────
+   BUILD CARDS
+────────────────────────────────────────────────────────── */
+const section = document.getElementById('cards-section');
+
+// section header
+const hdr = document.createElement('div');
+hdr.className = 'section-header';
+hdr.innerHTML = `
+  <div>
+    <p class="section-num">01 — Selected Works</p>
+    <p class="section-label">THE COLLECTION</p>
+  </div>
+  <div class="section-line"></div>`;
+section.appendChild(hdr);
+
+CARDS.forEach((c, i) => {
+  const card = document.createElement('div');
+  card.className = 'card' + (c.wide ? ' wide' : '');
+  card.dataset.index = i;
+  card.innerHTML = `
+    <div class="card-bg" style="background-image:url('${c.bg}')"></div>
+    <div class="card-vignette"></div>
+    <div class="card-body">
+      <span class="card-tag">${c.tag}</span>
+      <h2 class="card-title">${c.title}</h2>
+      <p class="card-desc">${c.desc}</p>
+    </div>
+    <div class="card-arrow">↗</div>`;
+  section.appendChild(card);
+});
+
+/* ──────────────────────────────────────────────────────────
+   CUSTOM CURSOR
+────────────────────────────────────────────────────────── */
+const cursor = document.getElementById('cursor');
+window.addEventListener('mousemove', e => {
+  gsap.to(cursor, { x: e.clientX, y: e.clientY, duration: .12, ease: 'power2.out' });
+});
+document.querySelectorAll('.card, .scroll-hint').forEach(el => {
+  el.addEventListener('mouseenter', () => cursor.classList.add('hovering'));
+  el.addEventListener('mouseleave', () => cursor.classList.remove('hovering'));
+});
+
+/* ──────────────────────────────────────────────────────────
+   SCROLL HIJACK — virtual scroll driving inner-container
+────────────────────────────────────────────────────────── */
+gsap.registerPlugin(ScrollTrigger);
+
+const inner   = document.getElementById('inner-container');
+const proxy   = document.getElementById('scroll-proxy');
+const bar     = document.getElementById('progress-bar');
+let maxScroll = 0;
+let currentY  = 0;
+let targetY   = 0;
+
+function setHeight() {
+  maxScroll = inner.scrollHeight - window.innerHeight;
+  proxy.style.height = inner.scrollHeight + 'px';
+}
+setHeight();
+window.addEventListener('resize', setHeight);
+
+// Smooth lerp scroll
+function lerp(a, b, t) { return a + (b - a) * t; }
+
+function tick() {
+  targetY  = Math.max(0, Math.min(window.scrollY, maxScroll));
+  currentY = lerp(currentY, targetY, .09);
+
+  gsap.set(inner, { y: -currentY });
+  gsap.set(bar, { width: (currentY / maxScroll * 100) + '%' });
+
+  // Parallax on card-bg elements (tied to currentY)
+  document.querySelectorAll('.card').forEach(card => {
+    const rect    = card.getBoundingClientRect();
+    const visible = (rect.top < window.innerHeight && rect.bottom > 0);
+    if (!visible) return;
+    const bg = card.querySelector('.card-bg');
+    if (!bg) return;
+    const relY = (rect.top + rect.height / 2 - window.innerHeight / 2);
+    const shift = relY * .12; // parallax factor
+    gsap.set(bg, { y: shift });
+  });
+
+  requestAnimationFrame(tick);
+}
+requestAnimationFrame(tick);
+
+/* Allow native scroll on the proxy */
+window.addEventListener('wheel', e => {
+  window.scrollBy(0, e.deltaY);
+}, { passive: true });
+
+/* ──────────────────────────────────────────────────────────
+   GSAP ENTRANCE ANIMATIONS
+────────────────────────────────────────────────────────── */
+
+// Hero entrance
+const heroTl = gsap.timeline({ delay: .2 });
+heroTl
+  .to('.hero-eyebrow', { opacity: 1, y: 0, duration: .7, ease: 'power3.out' })
+  .to('.hero-title',   { opacity: 1, y: 0, duration: .9, ease: 'expo.out' }, '-=.4')
+  .to('.hero-sub',     { opacity: 1, y: 0, duration: .7, ease: 'power2.out' }, '-=.5')
+  .to('.scroll-hint',  { opacity: 1, duration: .6, ease: 'power1.out' }, '-=.2');
+
+// Section header
+ScrollTrigger.create({
+  trigger: '.section-header',
+  scroller: inner,   // We want it to fire vs our virtual scroll — use custom scroller below
+  start: 'top 90%',
+  onEnter: () => {
+    gsap.to('.section-header', {
+      opacity: 1,
+      x: 0,
+      duration: .8,
+      ease: 'expo.out'
+    });
+  }
+});
+
+// Because we're using a virtual scroller, we trigger card animations
+// by watching each card's bounding-rect inside the RAF loop.
+const triggered = new Set();
+
+function checkCards() {
+  document.querySelectorAll('.card').forEach(card => {
+    const idx  = card.dataset.index;
+    if (triggered.has(idx)) return;
+
+    const rect = card.getBoundingClientRect();
+    if (rect.top < window.innerHeight * .88 && rect.bottom > 0) {
+      triggered.add(idx);
+
+      // Scale + fade entrance
+      gsap.to(card, {
+        scale: 1,
+        y: 0,
+        opacity: 1,
+        duration: .9,
+        ease: 'expo.out',
+        delay: (idx % 2) * .08
+      });
+
+      // Card body subtle lift
+      gsap.to(card.querySelector('.card-body'), {
+        y: 0,
+        opacity: 1,
+        duration: .75,
+        ease: 'power3.out',
+        delay: .15 + (idx % 2) * .08
+      });
+    }
+  });
+
+  // Section header check
+  const sh = document.querySelector('.section-header');
+  if (sh && !triggered.has('header')) {
+    const r = sh.getBoundingClientRect();
+    if (r.top < window.innerHeight * .9 && r.bottom > 0) {
+      triggered.add('header');
+      gsap.to(sh, { opacity: 1, x: 0, duration: .85, ease: 'expo.out' });
+    }
+  }
+}
+
+// Attach checkCards to the RAF loop
+(function loop() {
+  checkCards();
+  requestAnimationFrame(loop);
+})();
+
+/* ──────────────────────────────────────────────────────────
+   HOVER TILT on cards
+────────────────────────────────────────────────────────── */
+document.querySelectorAll('.card').forEach(card => {
+  card.addEventListener('mousemove', e => {
+    const r   = card.getBoundingClientRect();
+    const cx  = (e.clientX - r.left) / r.width  - .5;
+    const cy  = (e.clientY - r.top)  / r.height - .5;
+    gsap.to(card, {
+      rotationY: cx * 6,
+      rotationX: -cy * 5,
+      transformPerspective: 800,
+      duration: .4,
+      ease: 'power2.out'
+    });
+  });
+  card.addEventListener('mouseleave', () => {
+    gsap.to(card, { rotationY: 0, rotationX: 0, duration: .7, ease: 'elastic.out(1,.7)' });
+  });
+});
+</script>
+</body>
+</html>
