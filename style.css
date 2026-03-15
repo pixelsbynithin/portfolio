@@ -4,12 +4,12 @@
  
  @font-face {
      font-family: "f1";
-     src: url("fonts-new/Moonscape\ Demo.otf") format("truetype");
+     src: url("fonts-new/PlayfairDisplay-Bold.ttf") format("truetype");
      font-display: swap;
  }
   @font-face {
      font-family: "f2";
-     src: url("fonts-new/Bizantheum.otf") format("opentype");
+     src: url("fonts-new/Ponita\ Serif.ttf") format("opentype");
      font-display: swap;
  }
     /* ─── Reset ─────────────────────────────────────────────────── */
@@ -168,9 +168,9 @@ border-radius: 100px;
     transform-origin: bottom;
     filter: blur(0px);
     opacity: 0;
-    font-family: 'inter', sans-serif;
+    font-family: 'f2', sans-serif;
     text-transform: uppercase;
-    letter-spacing: -1px;
+    letter-spacing: 6px;
     font-weight: 600;
     line-height: 1;
 }
@@ -183,5 +183,8 @@ border-radius: 100px;
     transform: scale(1);
 }
     
-
+.section-container {
+    width: 100%;
+    padding: 60px 10%;
+}
    
