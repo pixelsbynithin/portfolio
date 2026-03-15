@@ -37,12 +37,14 @@
       z-index: 0;
     }
 /* Hide scrollbar but allow scroll */
-body {
+body,
+.hero {
   -ms-overflow-style: none;  /* IE & Edge */
   scrollbar-width: none;     /* Firefox */
 }
 
-body::-webkit-scrollbar {
+body::-webkit-scrollbar,
+.hero::-webkit-scrollbar {
   display: none;             /* Chrome, Safari */
 }
     /* ═══════════════════════════════════════════════════════════════
