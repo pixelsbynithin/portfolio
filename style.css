@@ -43,8 +43,7 @@ body,
   scrollbar-width: none;     /* Firefox */
 }
 
-body::-webkit-scrollbar,
-.hero::-webkit-scrollbar {
+body::-webkit-scrollbar {
   display: none;             /* Chrome, Safari */
 }
     /* ═══════════════════════════════════════════════════════════════
@@ -135,7 +134,10 @@ border-radius: 100px;
       background: #ffffff;
       color: #ffffff;
       width: 100%;
-      height: 100vh;
+      height: auto;
+    }
+    .main-container::-webkit-scrollbar {
+        display: none;
     }
 .hero {
     width: 100%;
