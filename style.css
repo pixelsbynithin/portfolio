@@ -36,7 +36,15 @@
       opacity: 0.35;
       z-index: 0;
     }
+/* Hide scrollbar but allow scroll */
+body {
+  -ms-overflow-style: none;  /* IE & Edge */
+  scrollbar-width: none;     /* Firefox */
+}
 
+body::-webkit-scrollbar {
+  display: none;             /* Chrome, Safari */
+}
     /* ═══════════════════════════════════════════════════════════════
        LOADER
     ═══════════════════════════════════════════════════════════════ */
