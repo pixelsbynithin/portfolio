@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Website</title>
+
+  <!-- GSAP -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+
+  <style>
+    /* ─── Reset ─────────────────────────────────────────────────── */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      font-family: 'Georgia', serif;
+    }
+
+    /* ─── Grain overlay (shared by both layers) ─────────────────── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      opacity: 0.35;
+      z-index: 0;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       LOADER
+    ═══════════════════════════════════════════════════════════════ */
+    #loader {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #0d0d0f;
+      z-index: 9999;
+      pointer-events: all;
+    }
+
+    /* Stage — the zero-size anchor at the viewport centre */
+    #stage {
+      position: relative;
+      width: 0;
+      height: 0;
+      z-index: 1;
+    }
+
+    /* Cards */
+    .card {
+      position: absolute;
+      width: 120px;
+      height: 120px;
+      top: -60px;
+      left: -60px;
+      border-radius: 0;
+      overflow: hidden;
+      cursor: pointer;
+      opacity: 0;
+      will-change: transform, opacity;
+    }
+
+    .card-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      pointer-events: none;
+      filter: saturate(1.15) contrast(1.05);
+    }
+
+    /* Glassy top-edge shine */
+    .card::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 12px;
+      background: linear-gradient(160deg,
+          rgba(255, 255, 255, 0.14) 0%,
+          rgba(255, 255, 255, 0.00) 45%);
+      pointer-events: none;
+    }
+
+    /* Loading label */
+    #label {
+      position: absolute;
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: rgba(255, 255, 255, 0.22);
+      font-size: 11px;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      white-space: nowrap;
+      opacity: 0;
+      z-index: 10;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       MAIN WEBSITE  –  replace everything inside #main-site with
+       your own page content.
+    ═══════════════════════════════════════════════════════════════ */
+    #main-site {
+      position: fixed;
+      inset: 0;
+      overflow-y: auto;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 1;
+
+      /* ── demo background – delete and replace with your own ── */
+      background: linear-gradient(135deg, #0d0d0f 0%, #111827 60%, #0f172a 100%);
+      color: #fff;
+    }
+
+    /* ── DEMO CONTENT STYLES – remove these once you have your own page ── */
+
+    .site-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 28px 60px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .site-logo {
+      font-size: 1.25rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #fff;
+      font-weight: 400;
+    }
+
+    .site-nav {
+      display: flex;
+      gap: 40px;
+      list-style: none;
+    }
+
+    .site-nav a {
+      color: rgba(255, 255, 255, 0.45);
+      text-decoration: none;
+      font-size: 0.78rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      transition: color 0.2s;
+    }
+
+    .site-nav a:hover { color: #fff; }
+
+    .hero {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: calc(100vh - 90px);
+      text-align: center;
+      padding: 60px 24px;
+    }
+
+    .hero-tag {
+      font-size: 0.7rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.35);
+      margin-bottom: 28px;
+    }
+
+    .hero h1 {
+      font-size: clamp(2.5rem, 7vw, 6rem);
+      font-weight: 400;
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+      color: #fff;
+      max-width: 820px;
+    }
+
+    .hero h1 em {
+      font-style: italic;
+      color: rgba(255, 255, 255, 0.45);
+    }
+
+    .hero-sub {
+      margin-top: 32px;
+      font-size: 1rem;
+      color: rgba(255, 255, 255, 0.4);
+      letter-spacing: 0.04em;
+      max-width: 480px;
+      line-height: 1.7;
+    }
+
+    .cta-row {
+      display: flex;
+      gap: 16px;
+      margin-top: 52px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .btn-primary {
+      padding: 14px 36px;
+      background: #fff;
+      color: #0d0d0f;
+      border: none;
+      border-radius: 99px;
+      font-size: 0.8rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    .btn-primary:hover { opacity: 0.85; }
+
+    .btn-ghost {
+      padding: 14px 36px;
+      background: transparent;
+      color: rgba(255, 255, 255, 0.55);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 99px;
+      font-size: 0.8rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: border-color 0.2s, color 0.2s;
+    }
+
+    .btn-ghost:hover {
+      border-color: rgba(255, 255, 255, 0.4);
+      color: #fff;
+    }
+
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 20px;
+      padding: 0 60px 80px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .grid-card {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: 16px;
+      padding: 32px 28px;
+      transition: background 0.2s;
+    }
+
+    .grid-card:hover { background: rgba(255, 255, 255, 0.07); }
+
+    .grid-card-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.08);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+    }
+
+    .grid-card h3 {
+      font-size: 1rem;
+      font-weight: 400;
+      letter-spacing: 0.04em;
+      color: #fff;
+      margin-bottom: 10px;
+    }
+
+    .grid-card p {
+      font-size: 0.83rem;
+      color: rgba(255, 255, 255, 0.38);
+      line-height: 1.65;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       LOADER  (do not remove — controlled entirely by JS below)
+  ═══════════════════════════════════════════════════════════════ -->
+  <div id="loader">
+    <div id="stage">
+
+      <!-- Card 1 -->
+      <div class="card" id="c1">
+        <img class="card-img" src="img/a1.jpg" alt="Mountains" />
+      </div>
+
+      <!-- Card 2 -->
+      <div class="card" id="c2">
+        <img class="card-img" src="img/a2.jpg" alt="Ocean" />
+      </div>
+
+      <!-- Card 3 -->
+      <div class="card" id="c3">
+        <img class="card-img" src="img/a3.jpg" alt="Forest" />
+      </div>
+
+      <!-- Card 4 -->
+      <div class="card" id="c4">
+        <img class="card-img" src="img/a4.jpg" alt="Desert" />
+      </div>
+
+      <!-- Card 5 -->
+      <div class="card" id="c5">
+        <img class="card-img" src="img/a6.jpg" alt="Aurora" />
+      </div>
+
+      <!-- Card 6 -->
+      <div class="card" id="c6">
+        <img class="card-img" src="img/a5.jpg" alt="City" />
+      </div>
+
+    </div><!-- /#stage -->
+
+    <p id="label">Loading assets</p>
+  </div><!-- /#loader -->
+
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       MAIN WEBSITE
+       Replace everything inside this div with your real page content.
+  ═══════════════════════════════════════════════════════════════ -->
+  <div id="main-site">
+
+    <header class="site-header">
+      <span class="site-logo">Studio</span>
+      <nav>
+        <ul class="site-nav">
+          <li><a href="#">Work</a></li>
+          <li><a href="#">About</a></li>
+          <li><a href="#">Services</a></li>
+          <li><a href="#">Contact</a></li>
+        </ul>
+      </nav>
+    </header>
+
+    <section class="hero">
+      <p class="hero-tag">Creative Studio — Est. 2024</p>
+      <h1>We craft <em>digital</em><br>experiences that last</h1>
+      <p class="hero-sub">
+        A multidisciplinary studio building websites, brands,
+        and interactive products for ambitious teams.
+      </p>
+      <div class="cta-row">
+        <button class="btn-primary">View our work</button>
+        <button class="btn-ghost">Get in touch</button>
+      </div>
+    </section>
+
+    <div class="card-grid">
+      <div class="grid-card">
+        <div class="grid-card-icon">✦</div>
+        <h3>Brand Identity</h3>
+        <p>Logos, systems, and visual languages built to be remembered across every touchpoint.</p>
+      </div>
+      <div class="grid-card">
+        <div class="grid-card-icon">◈</div>
+        <h3>Web Design</h3>
+        <p>Pixel-perfect interfaces with purposeful motion and obsessive attention to detail.</p>
+      </div>
+      <div class="grid-card">
+        <div class="grid-card-icon">⬡</div>
+        <h3>Development</h3>
+        <p>Production-grade code — fast, accessible, and built to scale with your product.</p>
+      </div>
+    </div>
+
+  </div><!-- /#main-site -->
+
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       LOADER LOGIC
+  ═══════════════════════════════════════════════════════════════ -->
+  <script>
+    /*
+     * HOW THE GATING WORKS
+     * ──────────────────────────────────────────────────────────────
+     * Two flags must BOTH be true before the site is revealed:
+     *
+     *   animDone  – the loader animation has completed at least one
+     *               full pass (all 5 phases finished).
+     *
+     *   pageDone  – window 'load' has fired, meaning all resources
+     *               (images, fonts, scripts) are ready.
+     *
+     * Whichever flag is set last will trigger tryReveal(), which
+     * cross-fades the loader out and the main site in.
+     *
+     * To use 'DOMContentLoaded' instead of 'load' (faster, but
+     * fires before images finish), swap the event name below.
+     * ──────────────────────────────────────────────────────────────
+     */
+
+    const cards  = gsap.utils.toArray('.card');
+    const label  = document.getElementById('label');
+    const loader = document.getElementById('loader');
+    const site   = document.getElementById('main-site');
+
+    // Off-screen distances
+    const VW = () => window.innerWidth  / 2 + 160;
+    const VH = () => window.innerHeight / 2 + 160;
+
+    // ── Gate flags ────────────────────────────────────────────────
+    let animDone = false;
+    let pageDone = false;
+
+    function tryReveal() {
+      if (!animDone || !pageDone) return;
+      revealSite();
+    }
+
+    // ── Cross-fade reveal ─────────────────────────────────────────
+    function revealSite() {
+      // Fade loader out
+      gsap.to(loader, {
+        opacity: 0,
+        duration: 0.75,
+        ease: 'power2.inOut',
+        onComplete() {
+          loader.style.display        = 'none';
+          loader.style.pointerEvents  = 'none';
+        }
+      });
+
+      // Fade main site in (slight delay so it starts mid-fade)
+      gsap.to(site, {
+        opacity: 1,
+        duration: 0.9,
+        delay: 0.3,
+        ease: 'power2.out',
+        onStart() {
+          site.style.pointerEvents = 'all';
+          // Unlock page scrolling once site is visible
+          document.body.style.overflow = 'auto';
+          document.documentElement.style.overflow = 'auto';
+        }
+      });
+    }
+
+    // ── Page-load flag ────────────────────────────────────────────
+    if (document.readyState === 'complete') {
+      // Already loaded (e.g. served from cache)
+      pageDone = true;
+    } else {
+      window.addEventListener('load', () => {
+        pageDone = true;
+        tryReveal();
+      });
+    }
+
+    // ── Animation sequence ────────────────────────────────────────
+    function runAnimation() {
+      const offLeft  = -VW();
+      const offRight =  VW();
+
+      // Pre-position cards off-screen
+      gsap.set([cards[0], cards[1], cards[2]], {
+        x: offLeft,  y: 0, rotation: 0, opacity: 0, zIndex: 1
+      });
+      gsap.set([cards[3], cards[4], cards[5]], {
+        x: offRight, y: 0, rotation: 0, opacity: 0, zIndex: 1
+      });
+
+      const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+
+      // Phase 0 – label fades in
+      tl.to(label, { opacity: 1, duration: 0.4 });
+
+      // Phase 1 & 2 – slide in from edges → stack at centre
+      tl.to(cards, {
+        x: 0, y: 0, opacity: 1,
+        duration: 0.9,
+        stagger: { each: 0.07, from: 'edges' },
+        ease: 'power3.out',
+        onStart() {
+          cards.forEach((c, i) => { c.style.zIndex = i + 1; });
+        }
+      }, '>-0.1');
+
+      // Phase 3 – each card pops to the front of the stack in turn
+      tl.add(() => {
+        gsap.to(label, { opacity: 0, duration: 0.3 });
+      });
+
+      cards.forEach(card => {
+        tl.add(() => {
+          cards.forEach((c, j) => { c.style.zIndex = j + 1; });
+          card.style.zIndex = cards.length + 10;
+        }, '>0.12');
+      });
+
+      // Phase 4 – horizontal spread
+      const totalSpan = Math.min(window.innerWidth - 150, 700);
+      const step      = totalSpan / (cards.length - 1);
+      const startX    = -totalSpan / 2;
+
+      tl.to(cards, {
+        x: (i) => startX + i * step,
+        y: 0,
+        rotation: 0,
+        duration: 0.75,
+        stagger: { each: 0.06, from: 'center' },
+        ease: 'power2.inOut'
+      }, '>0.3');
+
+      // Phase 5 – exit upward off-screen
+      tl.to(cards, {
+        y: -(VH() + 200),
+        opacity: 0,
+        duration: 0.65,
+        stagger: { each: 0.08, from: 'start' },
+        ease: 'power2.in'
+      }, '>0.4');
+
+      // ✅ One full animation cycle complete — set flag & try reveal
+      tl.call(() => {
+        animDone = true;
+        tryReveal();
+      });
+    }
+
+    // ── Kick off immediately ──────────────────────────────────────
+    runAnimation();
+  </script>
+
+</body>
+</html>

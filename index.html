@@ -1,338 +1,81 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>GSAP Card Loading Animation</title>
+  <title>My Website</title>
 
-  <!-- GSAP from cdnjs -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 
-  <style>
-    /* ─── Reset & Base ─────────────────────────────────────────────── */
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: #0d0d0f;
-      font-family: 'Georgia', serif;
-      overflow: hidden;
-    }
-
-    /* ─── Dark noise-grain overlay ──────────────────────────────────── */
-    body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
-      pointer-events: none;
-      opacity: 0.35;
-      z-index: 0;
-    }
-
-    /* ─── Stage ─────────────────────────────────────────────────────── */
-    /* The stage is the single fixed reference point for all cards.
-       It sits at the exact centre of the viewport. */
-    #stage {
-      position: relative;
-      width: 0;
-      height: 0;
-      z-index: 1;
-    }
-
-    /* ─── Cards ──────────────────────────────────────────────────────
-       Each card is absolutely positioned with its own centre-point
-       aligned to the stage (transform-origin: centre centre).
-       top: -60px  left: -60px  pushes the 120×120 card so its
-       geometric centre sits at the stage origin (0,0).             */
-    .card {
-      position: absolute;
-      width: 120px;
-      height: 120px;
-      top: -60px;
-      left: -60px;
-      border-radius: 0;
-      overflow: hidden;
-      cursor: pointer;
-      /* GSAP will override transform; we start them invisible */
-      opacity: 0;
-      will-change: transform, opacity;
-    }
-
-    /* Full-cover image inside the card */
-    .card-img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-      pointer-events: none;
-      /* Subtle colour-grade overlay on top of image */
-      filter: saturate(1.15) contrast(1.05);
-    }
-
-    /* Thin top-edge shine for a glassy card look */
-    .card::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      border-radius: 12px;
-      background: linear-gradient(
-        160deg,
-        rgba(255,255,255,0.14) 0%,
-        rgba(255,255,255,0.0)  45%
-      );
-      pointer-events: none;
-    }
-
-    /* ─── Replay button (shown after animation ends) ─────────────── */
-    #replay-btn {
-      position: fixed;
-      bottom: 36px;
-      left: 50%;
-      transform: translateX(-50%);
-      padding: 10px 28px;
-      background: rgba(255,255,255,0.07);
-      color: rgba(255,255,255,0.65);
-      border: 1px solid rgba(255,255,255,0.14);
-      border-radius: 99px;
-      font-size: 13px;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      cursor: pointer;
-      opacity: 0;
-      pointer-events: none;
-      transition: background 0.2s, color 0.2s;
-      z-index: 10;
-    }
-    #replay-btn:hover {
-      background: rgba(255,255,255,0.14);
-      color: #fff;
-    }
-
-    /* ─── Loading label ──────────────────────────────────────────── */
-    #label {
-      position: fixed;
-      bottom: 80px;
-      left: 50%;
-      transform: translateX(-50%);
-      color: rgba(255,255,255,0.22);
-      font-size: 11px;
-      letter-spacing: 0.25em;
-      text-transform: uppercase;
-      white-space: nowrap;
-      opacity: 0;
-      z-index: 10;
-    }
-  </style>
+<link rel="stylesheet" href="style.css">
 </head>
-<body>
 
-  <!--
-    ╔═══════════════════════════════════════════════════════════╗
-    ║  CARD ELEMENTS  — written directly in HTML as required.  ║
-    ║  All six cards share the same "stage" origin.            ║
-    ║  Background images: high-quality Unsplash photos         ║
-    ╚═══════════════════════════════════════════════════════════╝
-  -->
-  <div id="stage">
+<>
 
-    <!-- Card 1 – Misty mountains -->
-    <div class="card" id="c1">
-      <img class="card-img"
-        src="img/a1.jpg"
-        alt="Mountains" />
-    </div>
+  <!-- ═══════════════════════════════════════════════════════════════
+       LOADER  (do not remove — controlled entirely by JS below)
+  ═══════════════════════════════════════════════════════════════ -->
+  <div id="loader">
+    <div id="stage">
 
-    <!-- Card 2 – Ocean wave -->
-    <div class="card" id="c2">
-      <img class="card-img"
-        src="img/a2.jpg"
-        alt="Ocean" />
-    </div>
+      <!-- Card 1 -->
+      <div class="card" id="c1">
+        <img class="card-img" src="img/a1.jpg" alt="Mountains" />
+      </div>
 
-    <!-- Card 3 – Forest path -->
-    <div class="card" id="c3">
-      <img class="card-img"
-        src="img/a3.jpg"
-        alt="Forest" />
-    </div>
+      <!-- Card 2 -->
+      <div class="card" id="c2">
+        <img class="card-img" src="img/a2.jpg" alt="Ocean" />
+      </div>
 
-    <!-- Card 4 – Desert dunes -->
-    <div class="card" id="c4">
-      <img class="card-img"
-        src="img/a4.jpg"
-        alt="Desert" />
-    </div>
+      <!-- Card 3 -->
+      <div class="card" id="c3">
+        <img class="card-img" src="img/a3.jpg" alt="Forest" />
+      </div>
 
-    <!-- Card 5 – Aurora night sky -->
-    <div class="card" id="c5">
-      <img class="card-img"
-        src="img/a6.jpg"
-        alt="Aurora" />
-    </div>
+      <!-- Card 4 -->
+      <div class="card" id="c4">
+        <img class="card-img" src="img/a4.jpg" alt="Desert" />
+      </div>
 
-    <!-- Card 6 – City lights -->
-    <div class="card" id="c6">
-      <img class="card-img"
-        src="img/a5.jpg"
-        alt="City" />
-    </div>
+      <!-- Card 5 -->
+      <div class="card" id="c5">
+        <img class="card-img" src="img/a6.jpg" alt="Aurora" />
+      </div>
 
-  </div><!-- /#stage -->
+      <!-- Card 6 -->
+      <div class="card" id="c6">
+        <img class="card-img" src="img/a5.jpg" alt="City" />
+      </div>
 
-  <p id="label">Loading assets</p>
-  <button id="replay-btn">↺ Replay</button>
+    </div><!-- /#stage -->
 
-  <script>
-  /*
-   * ═══════════════════════════════════════════════════════════════════
-   *  GSAP CARD LOADING ANIMATION
-   *  Animation phases (all driven by a single master Timeline):
-   *
-   *   1. SLIDE IN   – cards fly from left/right edges to the centre
-   *   2. STACK      – cards converge exactly on top of each other
-   *   3. REVEAL     – deck fans open: each card rises & tilts slightly
-   *   4. SPREAD     – cards separate horizontally, equal spacing
-   *   5. EXIT UP    – staggered upward exit off the top of the screen
-   * ═══════════════════════════════════════════════════════════════════
-   */
+    <p id="label">Loading assets</p>
+  </div><!-- /#loader -->
 
-    // ── Grab elements ────────────────────────────────────────────────
-    const cards      = gsap.utils.toArray('.card');   // [c1 … c6]
-    const label      = document.getElementById('label');
-    const replayBtn  = document.getElementById('replay-btn');
 
-    // Viewport half-width (used for off-screen start positions)
-    const VW = () => window.innerWidth  / 2 + 160;   // safely off-screen
-    const VH = () => window.innerHeight / 2 + 160;   // safety for exit
+  <!-- ═══════════════════════════════════════════════════════════════
+       MAIN WEBSITE
+       Replace everything inside this div with your real page content.
+  ═══════════════════════════════════════════════════════════════ -->
+  <div id="main-site">
+    <section class="hero brr">
+       <canvas id="c" class="canvas"></canvas>
+         <div class="titles">
+          <p class="top-title" id="bnrTopTitle"> From Pixels</p><br>
+         <p class="top-title" id="bnrTopTitle2">to Production</p>
+         </div>
+    </section>
 
-    // ── Helper: show / hide replay button ────────────────────────────
-    function showReplay() {
-      gsap.to(replayBtn, { opacity: 1, duration: 0.4, ease: 'power2.out',
-        onComplete: () => { replayBtn.style.pointerEvents = 'auto'; } });
-    }
-    function hideReplay() {
-      replayBtn.style.pointerEvents = 'none';
-      gsap.to(replayBtn, { opacity: 0, duration: 0.2 });
-    }
+    section.projects
 
-    // ── Master animation function (called on load & replay) ──────────
-    function runAnimation() {
-      hideReplay();
+  </div><!-- /#main-site -->
 
-      /*
-       *  Pre-position: cards start invisible at their slide-in origin.
-       *  Left group  (c1,c2,c3) → negative X (left side of screen)
-       *  Right group (c4,c5,c6) → positive X (right side of screen)
-       *  All cards start on the centre Y axis of the viewport.
-       */
-      const offLeft  = -VW();
-      const offRight =  VW();
 
-      gsap.set([cards[0], cards[1], cards[2]], {
-        x: offLeft, y: 0, rotation: 0, opacity: 0, zIndex: 1
-      });
-      gsap.set([cards[3], cards[4], cards[5]], {
-        x: offRight, y: 0, rotation: 0, opacity: 0, zIndex: 1
-      });
+  <!-- GSAP -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
-      // ── Build the master timeline ─────────────────────────────────
-      const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
-
-      // ── Show loading label ────────────────────────────────────────
-      tl.to(label, { opacity: 1, duration: 0.4 });
-
-      /*
-       *  PHASE 1 & 2 — SLIDE IN + STACK
-       *  All six cards travel to x:0, y:0 (the stage centre).
-       *  A slight stagger gives a pleasant cascading feel.
-       *  z-index is set so c6 ends up on top of the visual stack.
-       */
-      tl.to(cards, {
-        x: 0,
-        y: 0,
-        opacity: 1,
-        duration: 0.9,
-        stagger: {
-          each: 0.07,             // stagger between each card
-          from: 'edges'           // left & right groups interleave nicely
-        },
-        ease: 'power3.out',
-        onStart() {
-          // Assign z-indices so the last card sits on top of the stack
-          cards.forEach((c, i) => { c.style.zIndex = i + 1; });
-        }
-      }, '>-0.1');
-
-      /*
-       *  PHASE 3 — REVEAL (z-index cycle)
-       *  No movement. Each card is instantly brought to the top of the
-       *  stack by setting its z-index to the highest value, one after
-       *  another with a short stagger — so the user sees each card
-       *  "pop" to the front of the pile.
-       */
-      tl.add(() => {
-        // Fade out label during reveal
-        gsap.to(label, { opacity: 0, duration: 0.3 });
-      });
-
-      cards.forEach((card, i) => {
-        tl.add(() => {
-          // Reset all z-indices, then bring this card to the top
-          cards.forEach((c, j) => { c.style.zIndex = j + 1; });
-          card.style.zIndex = cards.length + 10;
-        }, `>0.12`);   // 120 ms between each card flash
-      });
-
-      /*
-       *  PHASE 4 — HORIZONTAL SPREAD
-       *  Cards fan out equally across a 700px span centred at 0.
-       *  spacing = totalSpan / (count - 1) = 700 / 5 = 140 px apart.
-       *  Y returns to 0 (the horizontal centre line).
-       *  Rotation is zeroed out.
-       */
-      const windowWidth = window.innerWidth;
-      const totalSpan = windowWidth - 150
-      const count     = cards.length;                       // 6
-      const step      = totalSpan / (count - 1);            // 140 px
-      const startX    = -totalSpan / 2;                     // −350
-
-      tl.to(cards, {
-        x: (i) => startX + i * step,   // −350, −210, −70, 70, 210, 350
-        y: 0,
-        rotation: 0,
-        duration: 0.75,
-        stagger: { each: 0.06, from: 'center' },
-        ease: 'power2.inOut'
-      }, '>0.3');
-
-      /*
-       *  PHASE 5 — EXIT UPWARD
-       *  Cards fly off the top of the viewport one by one (left → right).
-       *  VH() gives enough distance to fully clear any screen size.
-       */
-      tl.to(cards, {
-        y: -(VH() + 200),
-        opacity: 0,
-        duration: 0.65,
-        stagger: { each: 0.08, from: 'start' },
-        ease: 'power2.in'
-      }, '>0.4');
-
-      // ── Show replay button when fully done ────────────────────────
-      tl.call(showReplay);
-
-      return tl;
-    }
-
-    // ── Replay on button click ────────────────────────────────────────
-    replayBtn.addEventListener('click', runAnimation);
-
-    // ── Kick off on page load ─────────────────────────────────────────
-    runAnimation();
-  </script>
+  <script src="script.js"></script>
 </body>
 </html>
