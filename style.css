@@ -155,7 +155,7 @@ border-radius: 100px;
    flex-direction: column;
    align-items: center;
    justify-content: center;
-   padding-top: 350px;
+   padding-top: 55vh;
 }
 .top-title{
     perspective: 300px;
@@ -182,7 +182,11 @@ border-radius: 100px;
     opacity: .3;
     transform: scale(1);
 }
-    
+   
+
+.section-2 {
+    background-color: #FFFFFF;
+}
 .section-container {
     width: 100%;
     padding: 60px 10%;
