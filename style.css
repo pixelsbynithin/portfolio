@@ -110,12 +110,12 @@ body::-webkit-scrollbar {
 
 
 
-      .section2 {
-            width: 100%;
-            height: 1200px;
-            background-color: rgb(255, 255, 255);
-            position: relative;
-        }
+.section2 {
+    width: 100%;
+    height: 1200px;
+    background: linear-gradient(to bottom, transparent 0%, rgb(0, 0, 0) 30%, rgb(0, 0, 0) 100%);
+    position: relative;
+}
         #bg-canvas {
             position: fixed;
             inset: 0;
