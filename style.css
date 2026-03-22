@@ -22,29 +22,10 @@
     html, body {
       width: 100%;
       height: 100%;
-      overflow: hidden;
       font-family: 'Georgia', serif;
     }
-
-    /* ─── Grain overlay (shared by both layers) ─────────────────── */
-    body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
-      pointer-events: none;
-      opacity: 0.35;
-      z-index: 0;
-    }
-/* Hide scrollbar but allow scroll */
-body,
-.hero {
-  -ms-overflow-style: none;  /* IE & Edge */
-  scrollbar-width: none;     /* Firefox */
-}
-
 body::-webkit-scrollbar {
-  display: none;             /* Chrome, Safari */
+  display: none;           /* Chrome, Safari */
 }
     /* ═══════════════════════════════════════════════════════════════
        LOADER
@@ -71,10 +52,10 @@ body::-webkit-scrollbar {
     /* Cards */
     .card {
       position: absolute;
-      width: 120px;
-      height: 120px;
-      top: -60px;
-      left: -60px;
+      width: 80px;
+      height: 80px;
+      top: -40px;
+      left: -40px;
       border-radius: 0;
       overflow: hidden;
       cursor: pointer;
@@ -118,77 +99,59 @@ body::-webkit-scrollbar {
       z-index: 10;
     }
 
-    /* ═══════════════════════════════════════════════════════════════
-       MAIN WEBSITE  –  replace everything inside #main-site with
-       your own page content.
-    ═══════════════════════════════════════════════════════════════ */
-    #main-site {
-        transform: translateY(0px);
-      overflow-y: auto;
-      opacity: 0;
-      pointer-events: none;
-      z-index: 1;
-scale: 1;
-border-radius: 100px;
-      /* ── demo background – delete and replace with your own ── */
-      background: #ffffff;
-      color: #ffffff;
-      width: 100%;
-      height: auto;
-    }
-    .main-container::-webkit-scrollbar {
-        display: none;
-    }
-.hero {
-    width: 100%;
-    height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
-      overflow: hidden;
-      position: relative;
-      background-color: #0d0d0f;
-}
-.titles {
-   display: flex;
-   flex-direction: column;
-   align-items: center;
-   justify-content: center;
-   padding-top: 55vh;
-}
-.top-title{
-    perspective: 300px;
-}
 
-.top-title span{
-    font-size: 4vw;
-    display: inline-block;
-    transform: rotateX(90deg);
-    transform-origin: bottom;
-    filter: blur(0px);
-    opacity: 0;
+
+
+
+
+
+
+
+
+
+
+      .section2 {
+            width: 100%;
+            height: 1200px;
+            background-color: rgb(255, 255, 255);
+            position: relative;
+        }
+        #bg-canvas {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+        }
+
+        #scroll-trigger {
+            position: relative;
+            height: 400vh;
+            z-index: 1;
+        }
+
+        #ui {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        h1 {
+            font-size: clamp(2rem, 6vw, 5.5rem);
+            font-weight: 700;
+            color: #fff;
+            text-align: center;
+            letter-spacing: -0.02em;
+            line-height: 1.1;
+            opacity: 0;
+        }
+.titleMain {
+        font-size: 4vw;
     font-family: 'f2', sans-serif;
     text-transform: uppercase;
-    letter-spacing: 6px;
+    letter-spacing: 10px;
     font-weight: 600;
-    line-height: 1;
+    line-height: 1.4;
 }
-
-.canvas {
-   width: 100vw !important;
-    position: absolute;
-    inset: 0;
-    opacity: .3;
-    transform: scale(1);
-}
-   
-
-.section-2 {
-    background-color: #FFFFFF;
-}
-.section-container {
-    width: 100%;
-    padding: 60px 10%;
-}
-   
