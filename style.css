@@ -9,7 +9,7 @@
 
  @font-face {
    font-family: "f2";
-   src: url("fonts-new/Ponita\ Serif.ttf") format("opentype");
+   src: url("fonts-new/Ponita\ Serif.ttf") format("truetype");
    font-display: swap;
  }
 
@@ -26,7 +26,6 @@
  body {
    width: 100%;
    height: 100%;
-   font-family: 'Georgia', serif;
  }
 
  body::-webkit-scrollbar {
@@ -119,7 +118,7 @@
 
  .spacer {
    width: 100%;
-   height: 600px;
+   height: 500px;
    background: linear-gradient(to bottom, transparent 0%, #0A0A0C 40%, #0A0A0C 100%);
    position: relative;
  }
@@ -165,8 +164,90 @@
    line-height: 1.4;
  }
 
+ .brr {
+   border: 5px solid red !important;
+ }
 
 
  .section2 {
-  
+   width: 100%;
+   display: flex;
+   flex-direction: column;
+   align-items: center;
+   justify-content: center;
+   background-color: #0A0A0C;
+   height: 100vh;
+   overflow: hidden;
  }
+
+
+ .zoomContainer {
+   width: 50vw;
+   height: 50vh;
+   border-radius: 30px;
+   background-color: #0A0A0C;
+   flex-shrink: 0;
+   /* prevents flexbox from squishing it */
+   will-change: width, height;
+   position: relative;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+ }
+
+ .zoomContainer .zoomImg {
+   width: 50px;
+   height: 60px;
+   object-fit: cover;
+   opacity: 0;
+ }
+
+ .content-wrap1 {
+   position: absolute;
+   left: 36px;
+   top: 36px;
+   width: 40%;
+   color: #0A0A0C;
+   font-family: "inter", sans-serif;
+ }
+
+ .content-wrap2 {
+   position: absolute;
+   right: 36px;
+   bottom: 36px;
+   width: 50%;
+   color: #0A0A0C;
+   font-family: "f1", sans-serif;
+   font-size: 24px;
+ }
+
+  .section3 {
+      width: 100%;
+      height: 110vh;
+      position: relative;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-evenly;
+      overflow: hidden;
+      background-color: #ffffff;
+    }
+
+    .miniCard {
+      width: 80px;
+      height: 80px;
+      border-radius: 6px;
+      flex-shrink: 0;
+      will-change: transform;
+    }
+    .miniCard img {
+        width:100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .spacer2 {
+      width: 100%;
+      height: 400px;
+      position: relative;
+      background-color: #0A0A0C;
+    }

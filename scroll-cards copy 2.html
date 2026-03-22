@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scroll Cards</title>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+
+    body {
+      background: var(--bg);
+      overflow-x: hidden;
+    }
+
+    /* Spacer sections to enable scrolling into/out of the animation */
+    .spacer {
+      height: 40vh;
+    }
+
+    /* ── ANIMATED SECTION ── */
+    .section3 {
+      width: 100%;
+      height: 200vh;
+      background: var(--surface);
+      position: relative;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-evenly;
+      overflow: hidden;
+    }
+
+    /* ── MINI CARDS ── */
+    .miniCard {
+      width: 80px;
+      height: 80px;
+      border-radius: 2px;
+      position: relative;
+      will-change: transform;
+      flex-shrink: 0;
+      background-color: red;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="spacer"></div>
+
+  <section class="section3" id="section3">
+    <div class="miniCard"></div>
+    <div class="miniCard"></div>
+    <div class="miniCard"></div>
+    <div class="miniCard"></div>
+    <div class="miniCard"></div>
+    <div class="miniCard"></div>
+  </section>
+
+  <div class="spacer"></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+  <script>
+    gsap.registerPlugin(ScrollTrigger);
+
+    const section = document.getElementById('section3');
+    const cards   = gsap.utils.toArray('.miniCard');
+
+    const tl = gsap.timeline({
+      scrollTrigger: {
+        trigger: section,
+        start  : 'top top',
+        end    : 'bottom bottom',
+        scrub  : 1.4,
+        pin    : true,
+        anticipatePin: 1,
+
+        onUpdate() {
+          cards.forEach(card => {
+            const rect   = card.getBoundingClientRect();
+            const cardCy = rect.top + rect.height / 2;
+            const vcCy   = window.innerHeight / 2;
+            const dist   = Math.abs(cardCy - vcCy);
+            const maxD   = window.innerHeight * 0.52;
+            const raw    = Math.max(0, 1 - dist / maxD);
+            const eased  = raw * raw * (3 - 2 * raw); // smoothstep
+            const scale  = 1 + eased * 0.4;
+            gsap.set(card, { scale, transformOrigin: 'center center' });
+          });
+        }
+      }
+    });
+
+    /* Phase 1 — Enter from top */
+    tl.fromTo(cards,
+      { y: '-100vh', opacity: 0, scale: 0.85 },
+      { y: '8vh', opacity: 1, scale: 1, ease: 'power2.out', stagger: 0.14, duration: 0.55 }
+    )
+    /* Phase 2 — Travel through center and exit below */
+    .to(cards,
+      { y: '85vh', ease: 'none', stagger: 0.07, duration: 1 }
+    );
+  </script>
+</body>
+</html>

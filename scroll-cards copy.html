@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GSAP Scroll Animation</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #0b0b10;
+      --surface: #13131c;
+      --accent1: #ff3c5f;
+      --accent2: #ff8c42;
+      --accent3: #ffe14d;
+      --accent4: #36f9a7;
+      --accent5: #4dcaff;
+      --accent6: #c77dff;
+      --text: #f0eee8;
+      --muted: rgba(240,238,232,0.35);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Syne', sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* ── Noise overlay ── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none; z-index: 0; opacity: 0.35;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      gap: 20px;
+    }
+
+    .hero-eyebrow {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.3em;
+      color: var(--accent4);
+      text-transform: uppercase;
+    }
+
+    .hero-title {
+      font-size: clamp(3rem, 8vw, 7rem);
+      font-weight: 800;
+      line-height: 0.95;
+      letter-spacing: -0.03em;
+    }
+
+    .hero-title span {
+      display: block;
+    }
+
+    .hero-title .line2 {
+      -webkit-text-stroke: 1.5px var(--text);
+      color: transparent;
+    }
+
+    .hero-sub {
+      font-family: 'Space Mono', monospace;
+      font-size: 12px;
+      color: var(--muted);
+      max-width: 320px;
+      line-height: 1.8;
+    }
+
+    .scroll-cta {
+      position: absolute;
+      bottom: 40px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+
+    .scroll-line {
+      width: 1px;
+      height: 50px;
+      background: linear-gradient(to bottom, var(--muted), transparent);
+      animation: lineGrow 1.5s ease-in-out infinite;
+    }
+
+    @keyframes lineGrow {
+      0%, 100% { transform: scaleY(1); opacity: 0.5; }
+      50% { transform: scaleY(0.5); opacity: 1; }
+    }
+
+    /* ── SECTION LABEL ── */
+    .section-label {
+      height: 40vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      z-index: 1;
+    }
+
+    .label-text {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.4em;
+      color: var(--muted);
+      text-transform: uppercase;
+      text-align: center;
+    }
+
+    /* ── SECTION 3 ── */
+    .section3 {
+      width: 100%;
+      height: 200vh;
+      background: var(--surface);
+      border-top: 1px solid rgba(255,255,255,0.06);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      z-index: 10;
+      position: relative;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-evenly;
+      overflow: hidden;
+    }
+
+    /* Horizontal center line */
+    .section3::after {
+      content: '';
+      position: absolute;
+      left: 5%;
+      right: 5%;
+      top: 50%;
+      height: 1px;
+      background: rgba(255,255,255,0.06);
+      pointer-events: none;
+    }
+
+    /* Center dot */
+    .section3::before {
+      content: 'CENTER';
+      position: absolute;
+      right: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-family: 'Space Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 0.2em;
+      color: rgba(255,255,255,0.15);
+      z-index: 20;
+    }
+
+    /* ── MINI CARDS ── */
+    .miniCard {
+      width: 80px;
+      height: 80px;
+      border-radius: 16px;
+      position: relative;
+      will-change: transform;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: default;
+    }
+
+    .miniCard::after {
+      content: attr(data-num);
+      font-family: 'Space Mono', monospace;
+      font-size: 18px;
+      font-weight: 700;
+      color: rgba(0,0,0,0.35);
+    }
+
+    .miniCard:nth-child(1) { background: var(--accent1); box-shadow: 0 0 40px -10px var(--accent1); }
+    .miniCard:nth-child(2) { background: var(--accent2); box-shadow: 0 0 40px -10px var(--accent2); }
+    .miniCard:nth-child(3) { background: var(--accent3); box-shadow: 0 0 40px -10px var(--accent3); }
+    .miniCard:nth-child(4) { background: var(--accent4); box-shadow: 0 0 40px -10px var(--accent4); }
+    .miniCard:nth-child(5) { background: var(--accent5); box-shadow: 0 0 40px -10px var(--accent5); }
+    .miniCard:nth-child(6) { background: var(--accent6); box-shadow: 0 0 40px -10px var(--accent6); }
+
+    /* ── OUTRO ── */
+    .outro {
+      height: 60vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      z-index: 1;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .outro-title {
+      font-size: clamp(1.5rem, 4vw, 3rem);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      opacity: 0.15;
+    }
+
+    .outro-sub {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.25em;
+      color: var(--muted);
+    }
+
+    /* ── PROGRESS INDICATOR ── */
+    .progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 2px;
+      background: linear-gradient(to right, var(--accent1), var(--accent4), var(--accent5), var(--accent6));
+      z-index: 9999;
+      transform-origin: left;
+      transform: scaleX(0);
+    }
+
+    /* ── HUD ── */
+    .hud {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      background: rgba(11,11,16,0.85);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 100px;
+      padding: 10px 20px;
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+      z-index: 9999;
+      backdrop-filter: blur(12px);
+      white-space: nowrap;
+      transition: opacity 0.4s;
+    }
+
+    .hud-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--accent4);
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%,100%{opacity:1;transform:scale(1)}
+      50%{opacity:0.4;transform:scale(0.7)}
+    }
+
+    /* ── CARD SCALE METERS ── */
+    .scale-meters {
+      position: fixed;
+      left: 24px;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      z-index: 9999;
+    }
+
+    .scale-meter {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .meter-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      transition: transform 0.1s;
+    }
+
+    .meter-bar-bg {
+      width: 50px;
+      height: 3px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .meter-bar-fill {
+      height: 100%;
+      border-radius: 2px;
+      transform-origin: left;
+      transform: scaleX(0);
+      transition: transform 0.05s;
+    }
+
+  </style>
+</head>
+<body>
+
+  <!-- Progress bar -->
+  <div class="progress-bar" id="progressBar"></div>
+
+  <!-- Scale meters -->
+  <div class="scale-meters" id="scaleMeters">
+    <div class="scale-meter"><div class="meter-dot" style="background:var(--accent1)"></div><div class="meter-bar-bg"><div class="meter-bar-fill" style="background:var(--accent1)" id="meter0"></div></div></div>
+    <div class="scale-meter"><div class="meter-dot" style="background:var(--accent2)"></div><div class="meter-bar-bg"><div class="meter-bar-fill" style="background:var(--accent2)" id="meter1"></div></div></div>
+    <div class="scale-meter"><div class="meter-dot" style="background:var(--accent3)"></div><div class="meter-bar-bg"><div class="meter-bar-fill" style="background:var(--accent3)" id="meter2"></div></div></div>
+    <div class="scale-meter"><div class="meter-dot" style="background:var(--accent4)"></div><div class="meter-bar-bg"><div class="meter-bar-fill" style="background:var(--accent4)" id="meter3"></div></div></div>
+    <div class="scale-meter"><div class="meter-dot" style="background:var(--accent5)"></div><div class="meter-bar-bg"><div class="meter-bar-fill" style="background:var(--accent5)" id="meter4"></div></div></div>
+    <div class="scale-meter"><div class="meter-dot" style="background:var(--accent6)"></div><div class="meter-bar-bg"><div class="meter-bar-fill" style="background:var(--accent6)" id="meter5"></div></div></div>
+  </div>
+
+  <!-- HUD -->
+  <div class="hud" id="hud">
+    <div class="hud-dot"></div>
+    <span id="hudText">scroll progress: 0%</span>
+  </div>
+
+  <!-- Hero -->
+  <section class="hero">
+    <p class="hero-eyebrow">gsap · scrolltrigger · scrub</p>
+    <h1 class="hero-title">
+      <span class="line1">Scroll</span>
+      <span class="line2">Driven</span>
+    </h1>
+    <p class="hero-sub">Six cards enter from above, travel through the viewport, and scale at the center. Fully scrubbed.</p>
+    <div class="scroll-cta">
+      <span>scroll</span>
+      <div class="scroll-line"></div>
+    </div>
+  </section>
+
+  <!-- Pre-label -->
+  <div class="section-label">
+    <p class="label-text">↓ animation zone begins ↓</p>
+  </div>
+
+  <!-- MAIN ANIMATED SECTION -->
+  <section class="section3" id="section3">
+    <div class="miniCard" data-num="01"></div>
+    <div class="miniCard" data-num="02"></div>
+    <div class="miniCard" data-num="03"></div>
+    <div class="miniCard" data-num="04"></div>
+    <div class="miniCard" data-num="05"></div>
+    <div class="miniCard" data-num="06"></div>
+  </section>
+
+  <!-- Post-label -->
+  <div class="section-label">
+    <p class="label-text">↑ animation zone ends ↑</p>
+  </div>
+
+  <!-- Outro -->
+  <section class="outro">
+    <h2 class="outro-title">That's a wrap.</h2>
+    <p class="outro-sub">gsap · scrolltrigger · scrub · stagger</p>
+  </section>
+
+  <!-- GSAP -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+  <script>
+    gsap.registerPlugin(ScrollTrigger);
+
+    const section  = document.getElementById('section3');
+    const cards    = gsap.utils.toArray('.miniCard');
+    const hud      = document.getElementById('hud');
+    const hudText  = document.getElementById('hudText');
+    const progressBar = document.getElementById('progressBar');
+    const meters   = cards.map((_, i) => document.getElementById('meter' + i));
+
+    /* ── Main timeline ── */
+    const tl = gsap.timeline({
+      scrollTrigger: {
+        trigger : section,
+        start   : 'top top',
+        end     : 'bottom bottom',
+        scrub   : 1.4,
+        pin     : true,
+        anticipatePin: 1,
+
+        onUpdate(self) {
+          const p = self.progress;
+
+          /* progress bar */
+          progressBar.style.transform = `scaleX(${p})`;
+
+          /* HUD */
+          hudText.textContent = `scroll progress: ${Math.round(p * 100)}%`;
+
+          /* Per-card scale based on distance from viewport center */
+          cards.forEach((card, i) => {
+            const rect = card.getBoundingClientRect();
+            const cardCy = rect.top + rect.height / 2;
+            const vcCy   = window.innerHeight / 2;
+            const dist   = Math.abs(cardCy - vcCy);
+            const maxD   = window.innerHeight * 0.52;
+
+            /* 0 = far from center, 1 = exactly at center */
+            const raw     = Math.max(0, 1 - dist / maxD);
+            /* smoothstep */
+            const eased   = raw * raw * (3 - 2 * raw);
+            const scale   = 1 + eased * 0.4;
+
+            gsap.set(card, { scale, transformOrigin: 'center center' });
+
+            /* Update meter */
+            if (meters[i]) {
+              meters[i].style.transform = `scaleX(${eased})`;
+            }
+          });
+        }
+      }
+    });
+
+    /* Phase 1 — Entry from top with stagger */
+    tl.fromTo(cards,
+      { y: '-100vh', opacity: 0, scale: 0.85 },
+      {
+        y       : '8vh',
+        opacity : 1,
+        scale   : 1,
+        ease    : 'power2.out',
+        stagger : 0.14,
+        duration: 0.55
+      }
+    )
+
+    /* Phase 2 — Travel down through and past center */
+    .to(cards,
+      {
+        y       : '85vh',
+        ease    : 'none',
+        stagger : 0.07,
+        duration: 1
+      }
+    );
+
+    /* ── Page-level progress ── */
+    ScrollTrigger.create({
+      trigger : document.body,
+      start   : 'top top',
+      end     : 'bottom bottom',
+    });
+
+    /* Hide HUD when not near section */
+    ScrollTrigger.create({
+      trigger : section,
+      start   : 'top 80%',
+      end     : 'bottom 20%',
+      onToggle: self => {
+        hud.style.opacity = self.isActive ? '1' : '0.3';
+        document.getElementById('scaleMeters').style.opacity = self.isActive ? '1' : '0';
+      }
+    });
+
+  </script>
+</body>
+</html>

@@ -55,11 +55,11 @@ function revealSite() {
 
     const bnrLetters = bnrTitle.textContent.split("");
     bnrTitle.innerHTML = "";
-bnrLetters.forEach(letter => {
-    const span = document.createElement("span");
-    span.innerHTML = letter === " " ? "&nbsp;" : letter;
-    bnrTitle.appendChild(span);
-});
+    bnrLetters.forEach(letter => {
+        const span = document.createElement("span");
+        span.innerHTML = letter === " " ? "&nbsp;" : letter;
+        bnrTitle.appendChild(span);
+    });
 
     const tl = gsap.timeline({ delay: 0 });
     tl.to("#bnrTopTitle span", {
@@ -198,139 +198,274 @@ runAnimation();
 
 
 
- /* ── renderer ── */
-        const canvas = document.getElementById('bg-canvas');
-        const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
-        renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-        renderer.setSize(innerWidth, innerHeight);
-        renderer.setClearColor(0x0a0a0c, 1);
+/* ── renderer ── */
+const canvas = document.getElementById('bg-canvas');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+renderer.setClearColor(0x0a0a0c, 1);
 
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 1000);
-        camera.position.z = 22;
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 1000);
+camera.position.z = 22;
 
-        /* ── geometry ── */
-        const COUNT = 12000;
-        const posArr = new Float32Array(COUNT * 3);
-        const colArr = new Float32Array(COUNT * 3);
+/* ── geometry ── */
+const COUNT = 12000;
+const posArr = new Float32Array(COUNT * 3);
+const colArr = new Float32Array(COUNT * 3);
 
-        function makeScatter() {
-            const p = new Float32Array(COUNT * 3);
-            for (let i = 0; i < COUNT; i++) {
-                const r = 11 + Math.random() * 16;
-                const t = Math.random() * Math.PI * 2;
-                const phi = Math.acos(2 * Math.random() - 1);
-                p[i * 3] = r * Math.sin(phi) * Math.cos(t);
-                p[i * 3 + 1] = r * Math.sin(phi) * Math.sin(t);
-                p[i * 3 + 2] = r * Math.cos(phi);
-            }
-            return p;
+function makeScatter() {
+    const p = new Float32Array(COUNT * 3);
+    for (let i = 0; i < COUNT; i++) {
+        const r = 11 + Math.random() * 16;
+        const t = Math.random() * Math.PI * 2;
+        const phi = Math.acos(2 * Math.random() - 1);
+        p[i * 3] = r * Math.sin(phi) * Math.cos(t);
+        p[i * 3 + 1] = r * Math.sin(phi) * Math.sin(t);
+        p[i * 3 + 2] = r * Math.cos(phi);
+    }
+    return p;
+}
+
+function makeSphere() {
+    const p = new Float32Array(COUNT * 3);
+    for (let i = 0; i < COUNT; i++) {
+        const phi = Math.acos(-1 + (2 * i) / COUNT);
+        const theta = Math.sqrt(COUNT * Math.PI) * phi;
+        const r = 7.5 + (Math.random() - 0.5) * 0.3;
+        p[i * 3] = r * Math.cos(theta) * Math.sin(phi);
+        p[i * 3 + 1] = r * Math.sin(theta) * Math.sin(phi);
+        p[i * 3 + 2] = r * Math.cos(phi);
+    }
+    return p;
+}
+
+const fromPts = makeScatter();
+const toPts = makeSphere();
+
+/* ── colors ── */
+const fromCols = new Float32Array(COUNT * 3);
+const toCols = new Float32Array(COUNT * 3);
+const col = new THREE.Color();
+
+for (let i = 0; i < COUNT; i++) {
+    col.setHSL(Math.random(), .1, 0.55);
+    fromCols[i * 3] = col.r; fromCols[i * 3 + 1] = col.g; fromCols[i * 3 + 2] = col.b;
+
+    col.setHSL(0.54 + (i / COUNT) * 0.18, 0.85, 0.44 + (i / COUNT) * 0.2);
+    toCols[i * 3] = col.r; toCols[i * 3 + 1] = col.g; toCols[i * 3 + 2] = col.b;
+}
+
+for (let i = 0; i < COUNT * 3; i++) { posArr[i] = fromPts[i]; colArr[i] = fromCols[i]; }
+
+const geo = new THREE.BufferGeometry();
+geo.setAttribute('position', new THREE.BufferAttribute(posArr, 3));
+geo.setAttribute('color', new THREE.BufferAttribute(colArr, 3));
+
+const mat = new THREE.PointsMaterial({
+    size: 0.07,
+    vertexColors: true,
+    blending: THREE.AdditiveBlending,
+    transparent: true,
+    opacity: 0.9,
+    sizeAttenuation: true,
+    depthWrite: false,
+});
+
+const points = new THREE.Points(geo, mat);
+scene.add(points);
+
+/* ── morph state driven by GSAP ── */
+const state = { progress: 0 };
+
+const title = document.getElementById('title');
+
+/* headline fade-in on load */
+gsap.to(title, { opacity: 1, duration: 1.2, ease: 'power2.out', delay: 0.5 });
+
+/* scroll-driven morph via ScrollTrigger scrub */
+gsap.to(state, {
+    progress: 1,
+    ease: 'none',
+    scrollTrigger: {
+        trigger: '#scroll-trigger',
+        start: 'top top',
+        end: 'bottom bottom',
+        scrub: 1,
+        onUpdate(self) {
+            const p = self.progress;
         }
+    }
+});
 
-        function makeSphere() {
-            const p = new Float32Array(COUNT * 3);
-            for (let i = 0; i < COUNT; i++) {
-                const phi = Math.acos(-1 + (2 * i) / COUNT);
-                const theta = Math.sqrt(COUNT * Math.PI) * phi;
-                const r = 7.5 + (Math.random() - 0.5) * 0.3;
-                p[i * 3] = r * Math.cos(theta) * Math.sin(phi);
-                p[i * 3 + 1] = r * Math.sin(theta) * Math.sin(phi);
-                p[i * 3 + 2] = r * Math.cos(phi);
-            }
-            return p;
+/* ── render loop ── */
+let spinAngle = 0;
+let last = performance.now();
+
+function animate() {
+    requestAnimationFrame(animate);
+    const now = performance.now();
+    const dt = (now - last) / 1000; last = now;
+
+    const e = state.progress;
+
+    /* morph positions + colors */
+    const p = geo.attributes.position.array;
+    const c = geo.attributes.color.array;
+    for (let i = 0; i < COUNT * 3; i++) {
+        p[i] = fromPts[i] + (toPts[i] - fromPts[i]) * e;
+        c[i] = fromCols[i] + (toCols[i] - fromCols[i]) * e;
+    }
+    geo.attributes.position.needsUpdate = true;
+    geo.attributes.color.needsUpdate = true;
+
+    /* spin — picks up speed as sphere forms */
+    spinAngle += dt * (0.06 + e * 0.3);
+    points.rotation.y = spinAngle;
+    points.rotation.x = Math.sin(spinAngle * 0.25) * 0.1 * e;
+
+    renderer.render(scene, camera);
+}
+animate();
+
+/* ── resize ── */
+window.addEventListener('resize', () => {
+    camera.aspect = innerWidth / innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(innerWidth, innerHeight);
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+const section2 = document.querySelector('.section2');
+const zoomContainer = document.querySelector('.zoomContainer');
+const zoomImg = document.querySelector('.zoomImg');
+let tl;
+
+function buildTimeline() {
+    if (tl) tl.kill();
+
+    tl = gsap.timeline({
+        scrollTrigger: {
+            trigger: section2,
+            start: 'top top',
+            end: '+=150%',
+            pin: true,
+            scrub: 1,
         }
+    });
 
-        const fromPts = makeScatter();
-        const toPts = makeSphere();
+    tl.to(zoomContainer, {
+        width: window.innerWidth,
+        height: window.innerHeight,
+        ease: 'power2.inOut',
+        backgroundColor: "#ffffff",
+        borderRadius: "0",
+    });
+        tl.to(zoomImg, {
+        width: 200,
+        height: 230,
+        ease: 'power2.inOut',
+        opacity: 1,
+}, "<");
+}
 
-        /* ── colors ── */
-        const fromCols = new Float32Array(COUNT * 3);
-        const toCols = new Float32Array(COUNT * 3);
-        const col = new THREE.Color();
+buildTimeline();
 
-        for (let i = 0; i < COUNT; i++) {
-            col.setHSL(Math.random(), .1, 0.55);
-            fromCols[i * 3] = col.r; fromCols[i * 3 + 1] = col.g; fromCols[i * 3 + 2] = col.b;
+window.addEventListener('resize', () => {
+    buildTimeline();
+    ScrollTrigger.refresh();
+});
 
-            col.setHSL(0.54 + (i / COUNT) * 0.18, 0.85, 0.44 + (i / COUNT) * 0.2);
-            toCols[i * 3] = col.r; toCols[i * 3 + 1] = col.g; toCols[i * 3 + 2] = col.b;
-        }
 
-        for (let i = 0; i < COUNT * 3; i++) { posArr[i] = fromPts[i]; colArr[i] = fromCols[i]; }
 
-        const geo = new THREE.BufferGeometry();
-        geo.setAttribute('position', new THREE.BufferAttribute(posArr, 3));
-        geo.setAttribute('color', new THREE.BufferAttribute(colArr, 3));
 
-        const mat = new THREE.PointsMaterial({
-            size: 0.07,
-            vertexColors: true,
-            blending: THREE.AdditiveBlending,
-            transparent: true,
-            opacity: 0.9,
-            sizeAttenuation: true,
-            depthWrite: false,
+
+
+
+
+
+
+
+
+
+
+
+
+const section3 = document.getElementById('section3');
+const minicards = gsap.utils.toArray('.miniCard');
+
+// Calculate the total scroll distance of section3
+const sectionHeight = section3.offsetHeight;
+const viewportHeight = window.innerHeight;
+const totalScroll = sectionHeight - viewportHeight;
+
+// Entry: cards fall in from -30vh during first half of scroll
+gsap.fromTo(minicards,
+  { y: '-30vh', opacity: 0.6 },
+  {
+    y: '90vh',
+    opacity: 1,
+    ease: 'power2.out',
+    stagger: 0.04,
+    scrollTrigger: {
+      trigger: section3,
+      start: 'top top',
+      end: 'center top',       // runs through the first half
+      scrub: 1.4,
+      pin: true,
+      anticipatePin: 1,
+      onUpdate() {
+        const vcCy = window.innerHeight / 2;
+        minicards.forEach(card => {
+          const rect = card.getBoundingClientRect();
+          const dist = Math.abs((rect.top + rect.height / 2) - vcCy);
+          const raw = Math.max(0, 1 - dist / (window.innerHeight * 0.5));
+          const eased = raw * raw * (3 - 2 * raw);
+          gsap.set(card, { scale: 1 + eased * 0.4, transformOrigin: 'center center' });
         });
+      }
+    }
+  }
+);
 
-        const points = new THREE.Points(geo, mat);
-        scene.add(points);
+// Exit: cards fall out to +120vh during second half of scroll
+gsap.fromTo(minicards,
+  { y: '90vh', opacity: 1 },
+  {
+    y: '120vh',
+    opacity: 0,
+    ease: 'power2.in',
+    stagger: 0.04,
+    scrollTrigger: {
+      trigger: section3,
+      start: 'center top',     // picks up exactly where entry ends
+      end: 'bottom bottom',
+      scrub: 1.4,
+    }
+  }
+);
 
-        /* ── morph state driven by GSAP ── */
-        const state = { progress: 0 };
 
-        const title = document.getElementById('title');
 
-        /* headline fade-in on load */
-        gsap.to(title, { opacity: 1, duration: 1.2, ease: 'power2.out', delay: 0.5 });
 
-        /* scroll-driven morph via ScrollTrigger scrub */
-        gsap.to(state, {
-            progress: 1,
-            ease: 'none',
-            scrollTrigger: {
-                trigger: '#scroll-trigger',
-                start: 'top top',
-                end: 'bottom bottom',
-                scrub: 1,
-                onUpdate(self) {
-                    const p = self.progress;
-                }
-            }
-        });
 
-        /* ── render loop ── */
-        let spinAngle = 0;
-        let last = performance.now();
 
-        function animate() {
-            requestAnimationFrame(animate);
-            const now = performance.now();
-            const dt = (now - last) / 1000; last = now;
 
-            const e = state.progress;
 
-            /* morph positions + colors */
-            const p = geo.attributes.position.array;
-            const c = geo.attributes.color.array;
-            for (let i = 0; i < COUNT * 3; i++) {
-                p[i] = fromPts[i] + (toPts[i] - fromPts[i]) * e;
-                c[i] = fromCols[i] + (toCols[i] - fromCols[i]) * e;
-            }
-            geo.attributes.position.needsUpdate = true;
-            geo.attributes.color.needsUpdate = true;
-
-            /* spin — picks up speed as sphere forms */
-            spinAngle += dt * (0.06 + e * 0.3);
-            points.rotation.y = spinAngle;
-            points.rotation.x = Math.sin(spinAngle * 0.25) * 0.1 * e;
-
-            renderer.render(scene, camera);
-        }
-        animate();
-
-        /* ── resize ── */
-        window.addEventListener('resize', () => {
-            camera.aspect = innerWidth / innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(innerWidth, innerHeight);
-        });
