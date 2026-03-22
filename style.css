@@ -220,34 +220,3 @@
    font-family: "f1", sans-serif;
    font-size: 24px;
  }
-
-  .section3 {
-      width: 100%;
-      height: 110vh;
-      position: relative;
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-evenly;
-      overflow: hidden;
-      background-color: #ffffff;
-    }
-
-    .miniCard {
-      width: 80px;
-      height: 80px;
-      border-radius: 6px;
-      flex-shrink: 0;
-      will-change: transform;
-    }
-    .miniCard img {
-        width:100%;
-        height: 100%;
-        object-fit: cover;
-    }
-
-    .spacer2 {
-      width: 100%;
-      height: 400px;
-      position: relative;
-      background-color: #0A0A0C;
-    }
