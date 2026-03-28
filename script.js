@@ -207,7 +207,7 @@ renderer.setClearColor(0x0a0a0c, 1);
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 1000);
-camera.position.z = 22;
+camera.position.z = 28;
 
 /* ── geometry ── */
 const COUNT = 12000;
@@ -232,7 +232,7 @@ function makeSphere() {
     for (let i = 0; i < COUNT; i++) {
         const phi = Math.acos(-1 + (2 * i) / COUNT);
         const theta = Math.sqrt(COUNT * Math.PI) * phi;
-        const r = 7.5 + (Math.random() - 0.5) * 0.3;
+        const r = 11 + (Math.random() - 0.5) * 0.3;
         p[i * 3] = r * Math.cos(theta) * Math.sin(phi);
         p[i * 3 + 1] = r * Math.sin(theta) * Math.sin(phi);
         p[i * 3 + 2] = r * Math.cos(phi);
