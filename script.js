@@ -396,7 +396,64 @@ window.addEventListener('resize', () => {
 
 
 
+ /* ─── Register ScrollTrigger plugin ──────────────────── */
+    gsap.registerPlugin(ScrollTrigger);
 
+    /* ─── Animate each project card on scroll ────────────── */
+    const projCards = document.querySelectorAll('.projectCard');
+
+    projCards.forEach((pCard, index) => {
+      /*
+       * Set the initial "hidden" state for each card.
+       * GSAP controls opacity / y / scale so the CSS never
+       * needs to handle these values.
+       */
+      gsap.set(pCard, {
+        opacity: 0,
+        y: 80,
+        scale: 0.92,
+      });
+
+      /*
+       * Create a scroll-triggered tween for each card.
+       * Each card is its own trigger so they fire independently
+       * as the user scrolls down — no batch, true per-card control.
+       */
+      gsap.to(pCard, {
+        opacity: 1,
+        y: 0,
+        scale: 1,
+
+        duration: 0.9,
+        ease: 'power3.out',
+
+        /*
+         * Slight stagger: each subsequent card starts a fraction
+         * of a second later than the one above it,
+         * giving the list a cascading feel when multiple cards
+         * enter the viewport together.
+         */
+        delay: index * 0.05,
+
+        scrollTrigger: {
+          trigger: pCard,            // each card triggers itself
+          start: 'top 88%',        // fire when card top hits 88% of viewport height
+          end: 'bottom 20%',
+          toggleActions: 'play none none reverse', // play once, never rewind
+        },
+      });
+    });
+
+    /* ─── Mouse-tracking gradient blob on each card ──────── */
+    document.querySelectorAll('.projectCard').forEach(pCard => {
+      pCard.addEventListener('mousemove', e => {
+        const r = pCard.getBoundingClientRect();
+        const x = ((e.clientX - r.left) / r.width)  * 100;
+        const y = ((e.clientY - r.top)  / r.height) * 100;
+        pCard.style.setProperty('--mx', `${x}%`);
+        pCard.style.setProperty('--my', `${y}%`);
+      });
+    });
 
 
 
