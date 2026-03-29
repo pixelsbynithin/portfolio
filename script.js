@@ -17,12 +17,6 @@ gsap.registerPlugin(ScrollTrigger);
 
 
 
-
-
-
-
-
-
 /* ── renderer ── */
 const canvas = document.getElementById('bg-canvas');
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
