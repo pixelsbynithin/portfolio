@@ -1,0 +1,217 @@
+  <div id="loader">
+    <div id="stage">
+
+      <!-- Card 1 -->
+      <div class="card" id="c1">
+        <img class="card-img" src="img/a1.jpg" alt="Mountains" />
+      </div>
+
+      <!-- Card 2 -->
+      <div class="card" id="c2">
+        <img class="card-img" src="img/a2.jpg" alt="Ocean" />
+      </div>
+
+      <!-- Card 3 -->
+      <div class="card" id="c3">
+        <img class="card-img" src="img/a3.jpg" alt="Forest" />
+      </div>
+
+      <!-- Card 4 -->
+      <div class="card" id="c4">
+        <img class="card-img" src="img/a4.jpg" alt="Desert" />
+      </div>
+
+      <!-- Card 5 -->
+      <div class="card" id="c5">
+        <img class="card-img" src="img/a6.jpg" alt="Aurora" />
+      </div>
+
+      <!-- Card 6 -->
+      <div class="card" id="c6">
+        <img class="card-img" src="img/a5.jpg" alt="City" />
+      </div>
+
+    </div><!-- /#stage -->
+
+    <p id="label">Loading assets</p>
+  </div><!-- /#loader -->
+
+
+  <script>
+    const cards = gsap.utils.toArray('.card');
+const label = document.getElementById('label');
+const loader = document.getElementById('loader');
+const site = document.getElementById('main-site');
+const bnrTitle = document.getElementById("bnrTopTitle");
+const bnrTitle2 = document.getElementById("bnrTopTitle2");
+
+
+// Off-screen distances
+const VW = () => window.innerWidth / 2 + 160;
+const VH = () => window.innerHeight / 2 + 160;
+
+// ── Gate flags ────────────────────────────────────────────────
+let animDone = false;
+let pageDone = false;
+
+function tryReveal() {
+    if (!animDone || !pageDone) return;
+    revealSite();
+}
+
+// ── Cross-fade reveal ─────────────────────────────────────────
+function revealSite() {
+    // Fade loader out
+    gsap.to(loader, {
+        opacity: 0,
+        duration: 0.75,
+        ease: 'power2.inOut',
+        onComplete() {
+            loader.style.display = 'none';
+            loader.style.pointerEvents = 'none';
+        }
+    });
+
+    // Fade main site in (slight delay so it starts mid-fade)
+    gsap.to(site, {
+        opacity: 1,
+        scale: 1,
+        y: 0,
+        borderRadius: 0,
+        duration: 0.4,
+        delay: 0,
+        ease: 'power3.out',
+        onStart() {
+            site.style.pointerEvents = 'all';
+            // Unlock page scrolling once site is visible
+            document.body.style.overflow = 'auto';
+            document.documentElement.style.overflow = 'auto';
+        }
+    });
+
+
+    const bnrLetters = bnrTitle.textContent.split("");
+    bnrTitle.innerHTML = "";
+    bnrLetters.forEach(letter => {
+        const span = document.createElement("span");
+        span.innerHTML = letter === " " ? "&nbsp;" : letter;
+        bnrTitle.appendChild(span);
+    });
+
+    const tl = gsap.timeline({ delay: 0 });
+    tl.to("#bnrTopTitle span", {
+        opacity: 1,
+        rotateX: 0,
+        y: 0,
+        filter: "blur(0px)",
+        ease: "power3.out",
+        duration: 1,
+        stagger: 0.01
+    });
+
+    const bnrLetters2 = bnrTitle2.textContent.split("");
+    bnrTitle2.innerHTML = "";
+    bnrLetters2.forEach(letter => {
+        const span = document.createElement("span");
+        span.innerHTML = letter === " " ? "&nbsp;" : letter;
+        bnrTitle2.appendChild(span);
+    });
+
+    const tl2 = gsap.timeline({ delay: .2 });
+    tl2.to("#bnrTopTitle2 span", {
+        opacity: 1,
+        rotateX: 0,
+        y: 0,
+        filter: "blur(0px)",
+        ease: "power3.out",
+        duration: 1,
+        stagger: 0.01
+    });
+}
+
+// ── Page-load flag ────────────────────────────────────────────
+if (document.readyState === 'complete') {
+    // Already loaded (e.g. served from cache)
+    pageDone = true;
+} else {
+    window.addEventListener('load', () => {
+        pageDone = true;
+        tryReveal();
+    });
+}
+
+// ── Animation sequence ────────────────────────────────────────
+function runAnimation() {
+    const offLeft = -VW();
+    const offRight = VW();
+
+    // Pre-position cards off-screen
+    gsap.set([cards[0], cards[1], cards[2]], {
+        x: offLeft, y: 0, rotation: 0, opacity: 0, zIndex: 1
+    });
+    gsap.set([cards[3], cards[4], cards[5]], {
+        x: offRight, y: 0, rotation: 0, opacity: 0, zIndex: 1
+    });
+
+    const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+
+    // Phase 0 – label fades in
+    tl.to(label, { opacity: 1, duration: 0.4 });
+
+    // Phase 1 & 2 – slide in from edges → stack at centre
+    tl.to(cards, {
+        x: 0, y: 0, opacity: 1,
+        duration: 0.9,
+        stagger: { each: 0.07, from: 'edges' },
+        ease: 'power3.out',
+        onStart() {
+            cards.forEach((c, i) => { c.style.zIndex = i + 1; });
+        }
+    }, '>-0.1');
+
+    // Phase 3 – each card pops to the front of the stack in turn
+    tl.add(() => {
+        gsap.to(label, { opacity: 0, duration: 0.3 });
+    });
+
+    cards.forEach(card => {
+        tl.add(() => {
+            cards.forEach((c, j) => { c.style.zIndex = j + 1; });
+            card.style.zIndex = cards.length + 10;
+        }, '>0.12');
+    });
+
+    const totalSpan = Math.min(window.innerWidth - 150);
+    const step = totalSpan / (cards.length - 1);
+    const startX = -totalSpan / 2;
+
+    tl.to(cards, {
+        x: (i) => startX + i * step,
+        y: 0,
+        rotation: 0,
+        duration: 0.7,
+        stagger: { each: 0.06, from: 'center' },
+        ease: 'power2.inOut'
+    }, '>0.3');
+
+    // Phase 5 – exit upward off-screen
+    tl.to(cards, {
+        y: -(VH() + 200),
+        opacity: 0,
+        duration: 0.65,
+        stagger: { each: 0.08, from: 'start' },
+        ease: 'power2.in'
+    }, '>0.4');
+
+    // ✅ One full animation cycle complete — set flag & try reveal
+    tl.call(() => {
+        animDone = true;
+        tryReveal();
+    });
+}
+
+// ── Kick off immediately ──────────────────────────────────────
+runAnimation();
+
+
+  </script>
