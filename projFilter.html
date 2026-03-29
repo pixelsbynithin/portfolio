@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio Projects</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 50px;
+            font-size: 2.5em;
+        }
+
+        .filter-section {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            margin-bottom: 40px;
+        }
+
+        .filter-title {
+            font-size: 1.3em;
+            color: #333;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .filter-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .filter-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-size: 0.95em;
+            color: #555;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        select {
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+            background-color: white;
+            color: #333;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        select:hover { border-color: #667eea; }
+
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
+        }
+
+        select:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .reset-button {
+            padding: 12px 30px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: background 0.3s ease;
+        }
+
+        .reset-button:hover { background: #5568d3; }
+
+        .projects-title {
+            color: white;
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 30px;
+        }
+
+        .project-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .project-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+
+        .project-image {
+            width: 100%;
+            height: 180px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3em;
+        }
+
+        .project-content { padding: 25px; }
+
+        .project-title {
+            font-size: 1.3em;
+            color: #333;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .project-description {
+            color: #666;
+            font-size: 0.95em;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+
+        .project-meta {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .meta-tag {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.83em;
+            font-weight: 500;
+        }
+
+        .meta-tag.platform { background: #e3f2fd; color: #1976d2; }
+        .meta-tag.industry { background: #f3e5f5; color: #7b1fa2; }
+
+        .no-projects {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 60px 20px;
+            color: white;
+        }
+
+        .no-projects-text { font-size: 1.3em; margin-bottom: 8px; }
+        .no-projects-subtext { font-size: 1em; opacity: 0.8; }
+
+        @media (max-width: 768px) {
+            .filter-group { grid-template-columns: 1fr; }
+            h1 { font-size: 1.8em; }
+            .projects-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Portfolio Projects</h1>
+
+    <div class="filter-section">
+        <div class="filter-title">Filter Projects</div>
+        <div class="filter-group">
+            <div class="filter-item">
+                <label for="filterType">Filter By:</label>
+                <select id="filterType">
+                    <option value="">Select Filter Type</option>
+                    <option value="platform">Platform</option>
+                    <option value="industry">Industry</option>
+                </select>
+            </div>
+            <div class="filter-item">
+                <label for="filterValue">Select Value:</label>
+                <select id="filterValue" disabled>
+                    <option value="">Choose an option</option>
+                </select>
+            </div>
+        </div>
+        <button class="reset-button" onclick="resetFilters()">Reset Filters</button>
+    </div>
+
+    <div class="projects-title">Featured Projects</div>
+    <div class="projects-grid" id="projectsGrid"></div>
+</div>
+
+<script>
+    const projectsData = [
+        { id: 1,  title: 'E-Commerce Platform',       description: 'Full-featured e-commerce with payment integration and inventory management.', icon: '🛒', platform: 'Webflow',      industry: 'Fintech'     },
+        { id: 2,  title: 'SaaS Dashboard',             description: 'Analytics dashboard for tracking business metrics in real-time.',               icon: '📊', platform: 'React',        industry: 'Technology'  },
+        { id: 3,  title: 'Healthcare Portal',          description: 'Patient management with appointment scheduling and medical records.',            icon: '🏥', platform: 'Vue.js',       industry: 'Healthcare'  },
+        { id: 4,  title: 'Marketing Website',          description: 'Responsive marketing site with CMS integration for content management.',        icon: '📱', platform: 'Webflow',      industry: 'Marketing'   },
+        { id: 5,  title: 'Payment Gateway',            description: 'Secure payment processing system with multiple currency support.',              icon: '💳', platform: 'Node.js',      industry: 'Fintech'     },
+        { id: 6,  title: 'Learning Management System', description: 'Online course platform with progress tracking and certificates.',               icon: '📚', platform: 'Django',       industry: 'Education'   },
+        { id: 7,  title: 'Social Media Analytics',    description: 'Tool for analyzing social media performance and engagement metrics.',           icon: '📈', platform: 'React',        industry: 'Marketing'   },
+        { id: 8,  title: 'Real Estate Portal',         description: 'Property listing platform with advanced search and virtual tours.',             icon: '🏠', platform: 'Webflow',      industry: 'Real Estate' },
+        { id: 9,  title: 'Fintech Mobile App',         description: 'Mobile app for managing investments and financial planning.',                   icon: '📲', platform: 'React Native', industry: 'Fintech'     },
+        { id: 10, title: 'Restaurant Management',      description: 'System for managing orders, inventory, and customer feedback.',                 icon: '🍕', platform: 'Vue.js',       industry: 'Hospitality' },
+        { id: 11, title: 'Tech News Aggregator',       description: 'Curated technology news feed with personalized recommendations.',              icon: '📰', platform: 'Next.js',      industry: 'Technology'  },
+        { id: 12, title: 'Insurance Claims Portal',    description: 'Streamlined claim submission and tracking system.',                             icon: '📋', platform: 'Node.js',      industry: 'Fintech'     }
+    ];
+
+    const filterOptions = {
+        platform: ['Webflow', 'React', 'Vue.js', 'Node.js', 'Django', 'React Native', 'Next.js'],
+        industry: ['Fintech', 'Technology', 'Healthcare', 'Marketing', 'Education', 'Real Estate', 'Hospitality']
+    };
+
+    const filterTypeSelect  = document.getElementById('filterType');
+    const filterValueSelect = document.getElementById('filterValue');
+    const projectsGrid      = document.getElementById('projectsGrid');
+
+    let currentFilters = { filterType: '', filterValue: '' };
+
+    displayProjects(projectsData);
+
+    filterTypeSelect.addEventListener('change', (e) => {
+        currentFilters.filterType  = e.target.value;
+        currentFilters.filterValue = '';
+        updateSecondDropdown(e.target.value);
+        displayProjects(projectsData);
+    });
+
+    filterValueSelect.addEventListener('change', (e) => {
+        currentFilters.filterValue = e.target.value;
+        applyFilter();
+    });
+
+    function updateSecondDropdown(filterType) {
+        filterValueSelect.innerHTML = '<option value="">Choose an option</option>';
+        if (filterType && filterOptions[filterType]) {
+            filterOptions[filterType].forEach(opt => {
+                const el = document.createElement('option');
+                el.value = opt;
+                el.textContent = opt;
+                filterValueSelect.appendChild(el);
+            });
+            filterValueSelect.disabled = false;
+        } else {
+            filterValueSelect.disabled = true;
+        }
+    }
+
+    function applyFilter() {
+        const { filterType, filterValue } = currentFilters;
+        if (!filterType || !filterValue) { displayProjects(projectsData); return; }
+
+        const filtered = projectsData.filter(p =>
+            filterType === 'platform' ? p.platform === filterValue :
+            filterType === 'industry' ? p.industry === filterValue : true
+        );
+        displayProjects(filtered);
+    }
+
+    function displayProjects(projects) {
+        projectsGrid.innerHTML = '';
+        if (projects.length === 0) {
+            projectsGrid.innerHTML = `
+                <div class="no-projects">
+                    <div class="no-projects-text">No projects found</div>
+                    <div class="no-projects-subtext">Try adjusting your filters</div>
+                </div>`;
+            return;
+        }
+        projects.forEach(p => {
+            const card = document.createElement('div');
+            card.className = 'project-card';
+            card.innerHTML = `
+                <div class="project-image">${p.icon}</div>
+                <div class="project-content">
+                    <h3 class="project-title">${p.title}</h3>
+                    <p class="project-description">${p.description}</p>
+                    <div class="project-meta">
+                        <span class="meta-tag platform">Platform: ${p.platform}</span>
+                        <span class="meta-tag industry">Industry: ${p.industry}</span>
+                    </div>
+                </div>`;
+            projectsGrid.appendChild(card);
+        });
+    }
+
+    function resetFilters() {
+        currentFilters = { filterType: '', filterValue: '' };
+        filterTypeSelect.value  = '';
+        filterValueSelect.value = '';
+        filterValueSelect.disabled = true;
+        filterValueSelect.innerHTML = '<option value="">Choose an option</option>';
+        displayProjects(projectsData);
+    }
+</script>
+
+</body>
+</html>

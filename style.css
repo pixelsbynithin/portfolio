@@ -269,14 +269,36 @@ h1 {
   --img-w: 160px;
 }
 
-.sectionProjects {
+.section3 {
   width: 100%;
   height: max-content;
   background-color: #ffffff;
   position: relative;
   margin-inline: auto;
 }
-
+.titleContainer {
+  margin-bottom: 48px;
+  background-color: #ffffff;
+}
+.titleContainer h4 {
+    font-family: "Instrument Serif", serif;
+  font-weight: 500;
+  font-style: italic;
+  font-size: 1.9rem;
+  line-height: 1;
+  text-align: center;
+  color: #460de4;
+}
+.titleContainer h2 {
+  font-family: "Inter", sans-serif;
+  font-size: 3rem;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  color: #2c2c2c;
+  margin-bottom: 6px;
+  text-align: center;
+}
 /* ── Each row / card ────────────────────────── */
 .projectCard {
   display: grid;
@@ -317,7 +339,7 @@ background-color: red !important;
   margin-bottom: 6px;
 }
 .projectCard__title h5 {
-    font-family: "Instrument Serif", serif;
+  font-family: "Instrument Serif", serif;
   font-weight: 500;
   font-style: italic;
   color: #2c2c2c;
@@ -357,7 +379,7 @@ background-color: red !important;
   letter-spacing: -0.03em;
   line-height: 1.1;
   color: var(--muted);
-  width: 70%;
+  width: 80%;
   height: 100%;
   display: flex;
   flex-direction: column;
