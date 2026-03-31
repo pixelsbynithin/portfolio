@@ -230,7 +230,7 @@ window.addEventListener('resize', () => {
       gsap.set(pCard, {
         opacity: 0,
         y: 80,
-        scale: .6,
+        scale: .8,
       });
 
       /*
