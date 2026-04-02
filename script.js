@@ -166,15 +166,17 @@ window.addEventListener('resize', () => {
 
 
 
-
-
 const section2 = document.querySelector('.section2');
 const zoomContainer = document.querySelector('.zoomContainer');
 const zoomImg = document.querySelector('.zoomImg');
 const topContainer = document.querySelector('.top_container');
 const btmContainer = document.querySelector('.btm_container');
 
-// Hide and offset both containers to the left initially
+// Cache viewport dimensions once
+let vw = window.innerWidth;
+let vh = window.innerHeight;
+
+// Hide and offset both containers initially
 gsap.set(topContainer, { autoAlpha: 0, y: 60 });
 gsap.set(btmContainer, { autoAlpha: 0, y: 60 });
 
@@ -183,6 +185,7 @@ let tl;
 function buildTimeline() {
   if (tl) tl.kill();
 
+  // Snapshot dimensions at build time — not live during animation
   tl = gsap.timeline({
     scrollTrigger: {
       trigger: section2,
@@ -193,10 +196,9 @@ function buildTimeline() {
     }
   });
 
-  // Phase 1: zoom container to full screen
   tl.to(zoomContainer, {
-    width: window.innerWidth,
-    height: window.innerHeight,
+    width: vw,
+    height: vh,
     ease: 'power2.inOut',
     backgroundColor: "#ffffff",
     borderRadius: "0",
@@ -209,7 +211,6 @@ function buildTimeline() {
     opacity: 1,
   }, "<");
 
-  // Phase 2: top container slides in from left at 90% of zoom
   tl.to(topContainer, {
     autoAlpha: 1,
     y: 0,
@@ -217,7 +218,6 @@ function buildTimeline() {
     ease: 'power2.out',
   }, "<80%");
 
-  // Phase 3: bottom container slides in slightly after top
   tl.to(btmContainer, {
     autoAlpha: 1,
     y: 0,
@@ -228,11 +228,20 @@ function buildTimeline() {
 
 buildTimeline();
 
+// Debounced resize — recalculate vw/vh then rebuild
+let resizeTimer;
 window.addEventListener('resize', () => {
-  buildTimeline();
-  ScrollTrigger.refresh();
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => {
+    vw = window.innerWidth;
+    vh = window.innerHeight;
+    ScrollTrigger.getAll().forEach(st => st.kill());
+    gsap.set(topContainer, { autoAlpha: 0, y: 60 });
+    gsap.set(btmContainer, { autoAlpha: 0, y: 60 });
+    buildTimeline();
+    ScrollTrigger.refresh();
+  }, 200);
 });
-
 
 
     /* ─── Animate each project card on scroll ────────────── */
