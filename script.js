@@ -100,7 +100,7 @@ const state = { progress: 0 };
 const title = document.getElementById('title');
 
 /* headline fade-in on load */
-gsap.to(title, { opacity: 1, duration: 1.2, ease: 'power2.out', delay: 0.5 });
+gsap.to(title, { opacity: 1, duration: 1.2, ease: 'power2.out', delay: 0.1 });
 
 /* scroll-driven morph via ScrollTrigger scrub */
 gsap.to(state, {
@@ -168,55 +168,70 @@ window.addEventListener('resize', () => {
 
 
 
-
-
-
-
 const section2 = document.querySelector('.section2');
 const zoomContainer = document.querySelector('.zoomContainer');
 const zoomImg = document.querySelector('.zoomImg');
+const topContainer = document.querySelector('.top_container');
+const btmContainer = document.querySelector('.btm_container');
+
+// Hide and offset both containers to the left initially
+gsap.set(topContainer, { autoAlpha: 0, x: 60 });
+gsap.set(btmContainer, { autoAlpha: 0, x: -60 });
+
 let tl;
 
 function buildTimeline() {
-    if (tl) tl.kill();
+  if (tl) tl.kill();
 
-    tl = gsap.timeline({
-        scrollTrigger: {
-            trigger: section2,
-            start: 'top top',
-            end: '+=150%',
-            pin: true,
-            scrub: 1,
-        }
-    });
+  tl = gsap.timeline({
+    scrollTrigger: {
+      trigger: section2,
+      start: 'top top',
+      end: '+=150%',
+      pin: true,
+      scrub: 1,
+    }
+  });
 
-    tl.to(zoomContainer, {
-        width: window.innerWidth,
-        height: window.innerHeight,
-        ease: 'power2.inOut',
-        backgroundColor: "#ffffff",
-        borderRadius: "0",
-    });
-        tl.to(zoomImg, {
-        width: 200,
-        height: 230,
-        ease: 'power2.inOut',
-        opacity: 1,
-}, "<");
+  // Phase 1: zoom container to full screen
+  tl.to(zoomContainer, {
+    width: window.innerWidth,
+    height: window.innerHeight,
+    ease: 'power2.inOut',
+    backgroundColor: "#ffffff",
+    borderRadius: "0",
+  });
+
+  tl.to(zoomImg, {
+    width: 200,
+    height: 230,
+    ease: 'power2.inOut',
+    opacity: 1,
+  }, "<");
+
+  // Phase 2: top container slides in from left at 90% of zoom
+  tl.to(topContainer, {
+    autoAlpha: 1,
+    x: 0,
+    duration: 0.5,
+    ease: 'power2.out',
+  }, "<80%");
+
+  // Phase 3: bottom container slides in slightly after top
+  tl.to(btmContainer, {
+    autoAlpha: 1,
+    x: 0,
+    duration: 0.5,
+    ease: 'power2.out',
+  }, "<0.1");
 }
 
 buildTimeline();
 
 window.addEventListener('resize', () => {
-    buildTimeline();
-    ScrollTrigger.refresh();
+  buildTimeline();
+  ScrollTrigger.refresh();
 });
-
-
-
-
- /* ─── Register ScrollTrigger plugin ──────────────────── */
-    gsap.registerPlugin(ScrollTrigger);
 
     /* ─── Animate each project card on scroll ────────────── */
     const projCards = document.querySelectorAll('.projectCard');
@@ -229,7 +244,7 @@ window.addEventListener('resize', () => {
        */
       gsap.set(pCard, {
         opacity: 0,
-        y: 80,
+        y: 90,
         scale: .8,
       });
 
@@ -273,9 +288,5 @@ window.addEventListener('resize', () => {
         pCard.style.setProperty('--my', `${y}%`);
       });
     });
-
-
-
-
 
 
