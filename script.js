@@ -175,8 +175,8 @@ const topContainer = document.querySelector('.top_container');
 const btmContainer = document.querySelector('.btm_container');
 
 // Hide and offset both containers to the left initially
-gsap.set(topContainer, { autoAlpha: 0, x: 60 });
-gsap.set(btmContainer, { autoAlpha: 0, x: -60 });
+gsap.set(topContainer, { autoAlpha: 0, y: 60 });
+gsap.set(btmContainer, { autoAlpha: 0, y: 60 });
 
 let tl;
 
@@ -212,7 +212,7 @@ function buildTimeline() {
   // Phase 2: top container slides in from left at 90% of zoom
   tl.to(topContainer, {
     autoAlpha: 1,
-    x: 0,
+    y: 0,
     duration: 0.5,
     ease: 'power2.out',
   }, "<80%");
@@ -220,7 +220,7 @@ function buildTimeline() {
   // Phase 3: bottom container slides in slightly after top
   tl.to(btmContainer, {
     autoAlpha: 1,
-    x: 0,
+    y: 0,
     duration: 0.5,
     ease: 'power2.out',
   }, "<0.1");
@@ -233,6 +233,8 @@ window.addEventListener('resize', () => {
   ScrollTrigger.refresh();
 });
 
+
+
     /* ─── Animate each project card on scroll ────────────── */
     const projCards = document.querySelectorAll('.projectCard');
 
@@ -244,7 +246,7 @@ window.addEventListener('resize', () => {
        */
       gsap.set(pCard, {
         opacity: 0,
-        y: 90,
+        y: 95,
         scale: .8,
       });
 
