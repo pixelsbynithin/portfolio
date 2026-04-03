@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #0a0a0f;
+    color: #f0ede8;
+    font-family: 'Georgia', serif;
+    overflow-x: hidden;
+  }
+
+  .hero {
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 12px;
+    padding: 40px;
+    text-align: center;
+  }
+
+  .scroll-hint {
+    position: absolute;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 12px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #888;
+    animation: bounce 2s infinite;
+  }
+  @keyframes bounce {
+    0%, 100% { transform: translateX(-50%) translateY(0); }
+    50% { transform: translateX(-50%) translateY(6px); }
+  }
+
+  .section {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    padding: 80px 40px;
+    gap: 24px;
+    text-align: center;
+    border-top: 1px solid #1e1e2a;
+  }
+
+  .label {
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: #555;
+    margin-bottom: 8px;
+  }
+
+  /* ── THE ANIMATION CLASS ─────────────────────── */
+  .gsapTextBlurAnim {
+    display: inline-block;
+    overflow: visible;
+    line-height: 1.15;
+  }
+
+  /* Each .char span injected by JS */
+  .gsapTextBlurAnim .char {
+    display: inline-block;
+    white-space: pre;
+  }
+  /* ─────────────────────────────────────────────── */
+
+  h1 { font-size: clamp(2.4rem, 6vw, 5rem); font-weight: 400; letter-spacing: -0.02em; line-height: 1.1; }
+  h2 { font-size: clamp(1.8rem, 4vw, 3.2rem); font-weight: 400; letter-spacing: -0.01em; }
+  p  { font-size: clamp(1rem, 2vw, 1.3rem); color: #aaa; max-width: 540px; line-height: 1.7; }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<section class="hero">
+  <p class="label">scroll to see the animation</p>
+  <h1 class="gsapTextBlurAnim">Blur in, letter by letter.</h1>
+  <p  class="gsapTextBlurAnim">Every character drifts upward from a soft haze into clarity — triggered exactly when it enters your viewport.</p>
+  <div class="scroll-hint">↓ scroll down</div>
+</section>
+
+<!-- SECTION 2 -->
+<section class="section">
+  <p class="label">gsapTextBlurAnim · heading</p>
+  <h2 class="gsapTextBlurAnim">Clarity arrives one letter at a time.</h2>
+  <p  class="gsapTextBlurAnim">Scroll-triggered, staggered, and GPU-smooth. Add the class and the animation just works.</p>
+</section>
+
+<!-- SECTION 3 -->
+<section class="section">
+  <p class="label">gsapTextBlurAnim · mixed content</p>
+  <h2 class="gsapTextBlurAnim">Motion with meaning.</h2>
+  <p  class="gsapTextBlurAnim">Each word carries intent. The blur dissolves as the eye settles, guiding attention without demanding it.</p>
+  <p  class="gsapTextBlurAnim">Use it on headings, subheadings, captions — any text you want to feel considered.</p>
+</section>
+
+<!-- GSAP + ScrollTrigger -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+<script>
+gsap.registerPlugin(ScrollTrigger);
+
+/* ════════════════════════════════════════════════
+   .gsapTextBlurAnim  —  copy this block to your project
+   ════════════════════════════════════════════════ */
+function initBlurTextAnim() {
+  const targets = document.querySelectorAll('.gsapTextBlurAnim');
+
+  targets.forEach(el => {
+    // ── 1. Split text into individual <span class="char"> ──
+    const originalHTML = el.innerHTML;
+
+    // Walk child nodes so we don't break nested tags (e.g. <strong>)
+    function wrapChars(node) {
+      if (node.nodeType === Node.TEXT_NODE) {
+        const frag = document.createDocumentFragment();
+        [...node.textContent].forEach(ch => {
+          const span = document.createElement('span');
+          span.className = 'char';
+          span.textContent = ch;
+          frag.appendChild(span);
+        });
+        return frag;
+      }
+      if (node.nodeType === Node.ELEMENT_NODE) {
+        const clone = node.cloneNode(false);
+        node.childNodes.forEach(child => clone.appendChild(wrapChars(child)));
+        return clone;
+      }
+      return node.cloneNode(true);
+    }
+
+    el.innerHTML = '';
+    // Re-parse original HTML safely
+    const tmp = document.createElement('div');
+    tmp.innerHTML = originalHTML;
+    tmp.childNodes.forEach(n => el.appendChild(wrapChars(n)));
+
+    const chars = el.querySelectorAll('.char');
+
+    // ── 2. Set initial hidden state ──
+    gsap.set(chars, {
+      filter: 'blur(3px)',
+      y: -10,
+      opacity: 0,
+    });
+
+    // ── 3. ScrollTrigger animation ──
+    gsap.to(chars, {
+      filter:   'blur(0px)',
+      y:        0,
+      opacity:  1,
+      duration: 0.55,
+      ease:     'power2.out',
+      stagger:  0.028,           // delay between each character
+
+      scrollTrigger: {
+        trigger: el,
+        start:   'top 85%',      // fires when element top hits 85% of viewport
+        toggleActions: 'play none none none',
+      }
+    });
+  });
+}
+
+initBlurTextAnim();
+/* ════════════════════════════════════════════════ */
+</script>
+</body>
+</html>

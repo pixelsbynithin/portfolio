@@ -20,7 +20,7 @@
     <div id="ui">
       <h1 id="title" class="titleMain">From Pixels<br>to Production</h1>
       <div class="scroll-down-container">
-        <p>Design and Development</p>
+        <p class="gsapTextBlurAnim">Design and Development</p>
       </div>
       <div>
         <div class="arrow">
@@ -48,123 +48,45 @@
   <section class="section2">
     <div class="zoomContainer">
       <div class="top_container">
-        <h2>
-          Creating Experiences with Code and Creativity.
-        </h2>
+        <h2 class="gsapTextBlurAnim">Creating Experiences with Code and Creativity.</h2>
       </div>
       <div class="btm_container">
         <p>
           Lorem ipsum dolor sit amet, consectetur adipisicing elit. Adipisci repellat repellendus ad corporis molestias
           eveniet mollitia voluptatem dolore eos deleniti excepturi placeat harum rem, beatae velit voluptatibus ipsa
-          temporibus minima. <br> <br>Lorem ipsum dolor, sit amet consectetur adipisicing elit. Alias reprehenderit debitis
+          temporibus minima. <br> <br>Lorem ipsum dolor, sit amet consectetur adipisicing elit. Alias reprehenderit
+          debitis
           et id a? Optio necessitatibus dolores nam adipisci delectus?
         </p>
       </div>
     </div>
   </section>
 
+  <div class="gradient_spacer"></div>
   <!-- ── Services Section ──────────────────────── -->
   <section class="section3">
     <div class="titleContainer">
-      <h2>Here are some of <br>my projects</h2>
+      <h2 class="gsapTextBlurAnim">Here are some of <br>my projects</h2>
     </div>
-    <div class="filter_Container">
-
-    </div>
+    <!-- <div class="filter_Container"> </div> -->
     <div class="sectionProjects">
 
-      <div class="projectCard">
-        <div class="projectCard__title">
-          <h4>
-            Web App
-          </h4>
+      <div class="custom_projectCard">
+        <div class="projCard_indusTitleDesc">
+          <div class="projCard_industry">Industry</p>
+          </div>
+          <div class="projCard_titleDesc">
+            <h2  class="gsapTextBlurAnim">Bukup - Event Management Platform</h2>
+            <p>
+              Its a complete event hosting and management platform, I drove the UI/UX design from
+              <span>Wireframes</span>
+              to high-fidelity <span>Prototypes</span>,<span> Animations</span>, and <span>Usability Testing</span>.
+              Crafted the <span>Front-end UI in React Js</span>, focusing on styling and interactive UI elements.
+            </p>
+          </div>
         </div>
-        <div class="projectCard__desc">
-          <h3>Bukup - Event Hosting and Management Platform</h3>
-          <p>
-            Its a complete event hosting and management platform, I drove the UI/UX design from <span>Wireframes</span>
-            to high-fidelity <span>Prototypes</span>,<span> Animations</span>, and <span>Usability Testing</span>.
-            Crafted the <span>Front-end UI in React Js</span>, focusing on styling and interactive UI elements.
-          </p>
-        </div>
-        <div class="projectCard__image-wrap">
-          <img src="img/a1.jpg" alt="Mobile App Design" />
-        </div>
-      </div>
-
-      <div class="projectCard">
-        <div class="projectCard__title">
-          <h3>
-            Product <br> Design
-          </h3>
-        </div>
-        <div class="projectCard__desc">
-          <h3>Ai Avatar Companion for Neurodivergent Childrens</h3>
-          <p>
-            Its a complete event hosting and management platform, I drove the UI/UX design from wireframes to
-            high-fidelity prototypes, animations, and usability testing.
-            Crafted the front-end experience in React, focusing on styling and interactive UI elements.
-          </p>
-        </div>
-        <div class="projectCard__image-wrap">
-          <img src="img/a2.jpg" alt="Mobile App Design" />
-        </div>
-      </div>
-
-      <div class="projectCard">
-        <div class="projectCard__title">
-          <h3>
-            Product <br> Development
-          </h3>
-        </div>
-        <div class="projectCard__desc">
-          <h3>Corrective Action Preventive Action (CAPA Module UI design)</h3>
-          <p>
-            Its a complete event hosting and management platform, I drove the UI/UX design from wireframes to
-            high-fidelity prototypes, animations, and usability testing.
-            Crafted the front-end experience in React, focusing on styling and interactive UI elements.
-          </p>
-        </div>
-        <div class="projectCard__image-wrap">
-          <img src="img/a3.jpg" alt="Mobile App Design" />
-        </div>
-      </div>
-
-      <div class="projectCard">
-        <div class="projectCard__title">
-          <h3>
-            Product <br> Development
-          </h3>
-        </div>
-        <div class="projectCard__desc">
-          <h3>HOA Office - Voting Platform</h3>
-          <p>
-            Its a complete event hosting and management platform, I drove the UI/UX design from wireframes to
-            high-fidelity prototypes, animations, and usability testing.
-            Crafted the front-end experience in React, focusing on styling and interactive UI elements.
-          </p>
-        </div>
-        <div class="projectCard__image-wrap">
-          <img src="img/a4.jpg" alt="Mobile App Design" />
-        </div>
-      </div>
-
-      <div class="projectCard">
-        <div class="projectCard__title">
-          <h3>
-            Product <br> Development
-          </h3>
-        </div>
-        <div class="projectCard__desc">
-          <h3>Bukup</h3>
-          <p>
-            Its a complete event hosting and management platform, I drove the UI/UX design from wireframes to
-            high-fidelity prototypes, animations, and usability testing.
-            Crafted the front-end experience in React, focusing on styling and interactive UI elements.
-          </p>
-        </div>
-        <div class="projectCard__image-wrap">
-          <img src="img/a5.jpg" alt="Mobile App Design" />
+        <div class="projCard_imgWrap">
+          <img src="img/p1.jpg" alt="">
         </div>
       </div>
     </div>
@@ -176,112 +98,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
   <script src="script.js"></script>
-
-  <script>
-     const projectsData = [
-        { id: 1,  title: 'E-Commerce Platform',       description: 'Full-featured e-commerce with payment integration and inventory management.', image: 'img/a1.jpg', platform: 'Webflow',      industry: 'Fintech'     },
-        { id: 2,  title: 'SaaS Dashboard',             description: 'Analytics dashboard for tracking business metrics in real-time.',               image: 'img/a2.jpg', platform: 'React',        industry: 'Technology'  },
-        { id: 3,  title: 'Healthcare Portal',          description: 'Patient management with appointment scheduling and medical records.',           image: 'img/a3.jpg', platform: 'Vue.js',       industry: 'Healthcare'  },
-        { id: 4,  title: 'Marketing Website',          description: 'Responsive marketing site with CMS integration for content management.',        image: 'img/a4.jpg', platform: 'Webflow',      industry: 'Marketing'   },
-        { id: 5,  title: 'Payment Gateway',            description: 'Secure payment processing system with multiple currency support.',              image: 'img/a5.jpg', platform: 'Node.js',      industry: 'Fintech'     },
-        { id: 6,  title: 'Learning Management System', description: 'Online course platform with progress tracking and certificates.',               image: 'img/a6.jpg', platform: 'Django',       industry: 'Education'   }
-    ];
-
-    const filterOptions = {
-        platform: ['Webflow', 'React', 'Vue.js', 'Node.js', 'Django', 'React Native', 'Next.js'],
-        industry: ['Fintech', 'Technology', 'Healthcare', 'Marketing', 'Education', 'Real Estate', 'Hospitality']
-    };
-
-    const filterTypeSelect  = document.getElementById('filterType');
-    const filterValueSelect = document.getElementById('filterValue');
-    const projectsGrid      = document.getElementById('projectsGrid');
-
-    let currentFilters = { filterType: '', filterValue: '' };
-
-    displayProjects(projectsData);
-
-    filterTypeSelect.addEventListener('change', (e) => {
-        currentFilters.filterType  = e.target.value;
-        currentFilters.filterValue = '';
-        updateSecondDropdown(e.target.value);
-        displayProjects(projectsData);
-    });
-
-    filterValueSelect.addEventListener('change', (e) => {
-        currentFilters.filterValue = e.target.value;
-        applyFilter();
-    });
-
-    function updateSecondDropdown(filterType) {
-        filterValueSelect.innerHTML = '<option value="">Choose an option</option>';
-        if (filterType && filterOptions[filterType]) {
-            filterOptions[filterType].forEach(opt => {
-                const el = document.createElement('option');
-                el.value = opt;
-                el.textContent = opt;
-                filterValueSelect.appendChild(el);
-            });
-            filterValueSelect.disabled = false;
-        } else {
-            filterValueSelect.disabled = true;
-        }
-    }
-
-    function applyFilter() {
-        const { filterType, filterValue } = currentFilters;
-        if (!filterType || !filterValue) { displayProjects(projectsData); return; }
-
-        const filtered = projectsData.filter(p =>
-            filterType === 'platform' ? p.platform === filterValue :
-            filterType === 'industry' ? p.industry === filterValue : true
-        );
-        displayProjects(filtered);
-    }
-
-    function displayProjects(projects) {
-        projectsGrid.innerHTML = '';
-        if (projects.length === 0) {
-            projectsGrid.innerHTML = `
-                <div class="no-projects">
-                    <div class="no-projects-text">No projects found</div>
-                    <div class="no-projects-subtext">Try adjusting your filters</div>
-                </div>`;
-            return;
-        }
-        projects.forEach(p => {
-            const card = document.createElement('div');
-            card.className = 'projectCard';
-            card.innerHTML = `
-
-                <div class="projectCard__title">
-          <h3>
-            ${p.platform}, ${p.industry}
-          </h3>
-        </div>
-        <div class="projectCard__desc">
-          <h3>${p.title}</h3>
-          <p>
-           ${p.description}
-          </p>
-        </div>
-        <div class="projectCard__image-wrap">
-          ${p.icon}
-        </div>
-                
-                `;
-            projectsGrid.appendChild(card);
-        });
-    }
-
-    function resetFilters() {
-        currentFilters = { filterType: '', filterValue: '' };
-        filterTypeSelect.value  = '';
-        filterValueSelect.value = '';
-        filterValueSelect.disabled = true;
-        filterValueSelect.innerHTML = '<option value="">Choose an option</option>';
-        displayProjects(projectsData);
-    }
-  </script>
+  <script src="textAnimGsap.js"></script>
 </body>
 
 </html>

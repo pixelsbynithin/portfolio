@@ -36,10 +36,26 @@
   padding: 0;
 }
 
+:root {
+  --white: #f5f4f2;
+  --black: #000000;
+  --border-light: #dadada;
+  --border-medium: #8b8b8b;
+  --border-dark: #353535;
+
+  --primary: #6629d8;
+  --bg-light: #f5f5f5;
+  --bg-dark: #010007;
+
+  --text-dark: #000000;
+  --text-grey: #888888;
+  --text-white: #FFFFFF;
+}
 html,
 body {
   width: 100%;
   height: 100%;
+  font-family: "Inter", sans-serif;
 }
 
 body::-webkit-scrollbar {
@@ -322,31 +338,46 @@ h1 {
   position: relative;
 }
 
-.gradient_spacer {
+/* .gradient_spacer {
   width: 100%;
   height: 500px;
-  /* adjust as needed */
-
   background: linear-gradient(to bottom,
       #ffffff 0%,
       #281896 50%,
       #07022C 75%,
       #010007 100%);
   position: relative;
+} */
+.gradient_spacer {
+  width: 100%;
+  height: 500px;
+  background: linear-gradient(to bottom,
+    #ffffff 25%,
+    #8F00FF 50%,
+    #281896 75%,
+    #010007 100%
+  );
+  position: relative;
 }
+  /* ── THE ANIMATION CLASS ─────────────────────── */
+  .gsapTextBlurAnim {
+    display: inline-block;
+    overflow: visible;
+    line-height: 1.15;
+  }
 
+  /* Each .char span injected by JS */
+  .gsapTextBlurAnim .char {
+    display: inline-block;
+    white-space: pre;
+  }
 /* ─── Section: Projects ─────────────────────────────────── */
 
-:root {
-  --bg: #f5f4f2;
-  --line: #d8d6d2;
-  --muted: #888884;
-}
 
 .section3 {
   width: 100%;
   height: max-content;
-  background-color: #ffffff;
+  background-color: var(--bg-dark);
   position: relative;
   margin-inline: auto;
 }
@@ -357,16 +388,6 @@ h1 {
   padding: 36px 6vw;
 }
 
-.titleContainer h4 {
-  font-family: "Instrument Serif", serif;
-  font-weight: 500;
-  font-style: italic;
-  font-size: 1.9rem;
-  line-height: 1;
-  text-align: start;
-  color: #460de4;
-}
-
 .titleContainer h2 {
   font-family: "Instrument Serif", serif;
   font-size: 66px;
@@ -374,8 +395,8 @@ h1 {
   letter-spacing: -0.04em;
   font-style: normal;
   line-height: 1;
-  color: #2c2c2c;
-  text-align: center;
+  color: var(--text-white);
+  text-align: start;
 }
 @media (max-width: 576px) {
 .titleContainer h2 {
@@ -389,11 +410,9 @@ h1 {
 
 .projectCard {
   width: 100%;
-  border-top: 2px solid #dadada;
+  border-top: 2px solid var(--border-light);
   padding: 50px 0;
   display: flex;
-  /* grid-template-columns: 1fr 2fr 1fr; */
-
   align-items: start;
   justify-content: start;
   position: relative;
@@ -710,3 +729,99 @@ h1 {
   font-size: 0.9rem;
   color: var(--muted);
 }
+
+
+/* ============================================================================
+Project card css start ========================================================
+=============================================================================== */
+
+.custom_projectCard {
+  width: 100%;
+  display: flex;
+  flex-shrink: 0;
+  padding: 36px 0;
+  border-top: 1px solid var(--border-dark);
+}
+.projCard_indusTitleDesc {
+  width: 45%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding-right: 40px;
+}
+.projCard_titleDesc h2 {
+  font-size: 40px;
+  font-weight: 400;
+  letter-spacing: -0.04em;
+  line-height: 1.1;
+  margin-bottom: 24px;
+  color: var(--text-white);
+}
+.projCard_titleDesc  p {
+    font-size: 18px;
+    line-height: 1.3;
+    font-weight: 500;
+    font-family: "Inter", sans-serif;
+    letter-spacing: -0.03em;
+    color: var(--text-grey);
+}
+.projCard_titleDesc p span {
+  color: var(--text-white);
+  font-weight: 500;
+}
+.projCard_industry {
+  width: 100%;
+  color: var(--text-grey);
+}
+.projCard_titleDesc {
+  width: 100%;
+}
+.projCard_imgWrap {
+  width: 55%;
+  display: flex;
+  justify-content: end;
+}
+.projCard_imgWrap img {
+  width: 90%;
+  height:450px;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+@media (max-width: 768px) {
+  
+.custom_projectCard {
+  flex-direction: column;
+}
+.projCard_indusTitleDesc {
+  width: 100%;
+  padding-right: 0px;
+  margin-bottom: 40px;
+}
+.projCard_titleDesc h2 {
+  font-size: 30px;
+  margin-top: 36px;
+  margin-bottom: 16px;
+}
+.projCard_titleDesc  p {
+    font-size: 16px;
+}
+.projCard_industry {
+  width: 100%;
+}
+.projCard_titleDesc {
+  width: 100%;
+}
+.projCard_imgWrap {
+  width: 100%;
+}
+.projCard_imgWrap img {
+  width: 100%;
+  height:250px;
+}
+
+}
+
+/* ============================================================================
+Project card css end ========================================================
+=============================================================================== */
