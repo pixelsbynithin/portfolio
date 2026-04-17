@@ -146,7 +146,11 @@ body::-webkit-scrollbar {
   background: linear-gradient(to bottom, transparent 60%, #0A0A0C 95%, #0A0A0C 100%);
   position: relative;
 }
-
+@media (max-width: 576px) {
+  .spacer {
+    height: 300px;
+  }
+}
 #bg-canvas {
   position: fixed;
   inset: 0;
