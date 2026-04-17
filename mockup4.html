@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mockup Studio</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    #app {
+      padding: 12px;
+      font-family: var(--font-sans);
+    }
+
+    #toolbar {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+
+    #toolbar label {
+      font-size: 13px;
+      color: var(--color-text-secondary);
+    }
+
+    .ubtn {
+      font-size: 13px;
+      padding: 5px 12px;
+      border: 0.5px solid var(--color-border-secondary);
+      border-radius: var(--border-radius-md);
+      background: var(--color-background-secondary);
+      color: var(--color-text-primary);
+      cursor: pointer;
+    }
+
+    .ubtn:hover {
+      background: var(--color-background-tertiary);
+    }
+
+    #export-btn {
+      font-size: 13px;
+      padding: 5px 12px;
+      border: 0.5px solid var(--color-border-secondary);
+      border-radius: var(--border-radius-md);
+      background: var(--color-background-secondary);
+      color: var(--color-text-primary);
+      cursor: pointer;
+      margin-left: auto;
+    }
+
+    #canvas-wrap {
+      position: relative;
+      border: 0.5px solid var(--color-border-tertiary);
+      border-radius: var(--border-radius-md);
+      overflow: hidden;
+      background: #1a1a2e;
+      display: inline-block;
+      width: 100%;
+      height: 900px;
+      border: 3px solid red;
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .handle {
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #fff;
+      border: 2px solid #6c63ff;
+      cursor: grab;
+      transform: translate(-50%, -50%);
+      touch-action: none;
+      z-index: 10;
+    }
+
+    #hint {
+      font-size: 12px;
+      color: var(--color-text-tertiary);
+      margin-top: 6px;
+    }
+
+    input[type=file] {
+      display: none;
+    }
+  </style>
+
+  <div id="app">
+    <div id="toolbar">
+      <label>Base:</label>
+      <button class="ubtn" onclick="document.getElementById('f-base').click()">Upload image</button>
+      <input type="file" id="f-base" accept="image/*">
+      <label>Overlay:</label>
+      <button class="ubtn" onclick="document.getElementById('f-over').click()">Upload image</button>
+      <input type="file" id="f-over" accept="image/*">
+      <button id="export-btn">Export PNG</button>
+    </div>
+    <div id="canvas-wrap">
+      <canvas id="c" width="1280" height="720"></canvas>
+    </div>
+    <p id="hint">Upload a base image and overlay, then drag the 4 corner handles to position the overlay.</p>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('c');
+    const ctx = canvas.getContext('2d');
+    const wrap = document.getElementById('canvas-wrap');
+    let baseImg = null, overImg = null, pts = null;
+    let srcPixels = null, srcW = 0, srcH = 0;
+
+    function defaultPts() {
+      const cw = canvas.width, ch = canvas.height;
+      const ow = cw * 0.55, oh = ch * 0.55;
+      const ox = (cw - ow) / 2, oy = (ch - oh) / 2;
+      return [{ x: ox, y: oy }, { x: ox + ow, y: oy }, { x: ox + ow, y: oy + oh }, { x: ox, y: oy + oh }];
+    }
+
+    // Solve 8x8 linear system Ax=b using Gaussian elimination
+    function gaussSolve(A, b) {
+      const n = 8;
+      const M = A.map((row, i) => [...row, b[i]]);
+      for (let col = 0; col < n; col++) {
+        let maxRow = col;
+        for (let row = col + 1; row < n; row++)
+          if (Math.abs(M[row][col]) > Math.abs(M[maxRow][col])) maxRow = row;
+        [M[col], M[maxRow]] = [M[maxRow], M[col]];
+        if (Math.abs(M[col][col]) < 1e-12) return null;
+        for (let row = 0; row < n; row++) {
+          if (row === col) continue;
+          const f = M[row][col] / M[col][col];
+          for (let k = col; k <= n; k++) M[row][k] -= f * M[col][k];
+        }
+      }
+      return M.map((row, i) => row[n] / row[i]);
+    }
+
+    // Compute homography: maps src quad -> dst quad
+    // src corners: (0,0),(sw,0),(sw,sh),(0,sh)
+    // dst corners: tl,tr,br,bl
+    function computeH(tl, tr, br, bl, sw, sh) {
+      const srcPts = [[0, 0], [sw, 0], [sw, sh], [0, sh]];
+      const dstPts = [[tl.x, tl.y], [tr.x, tr.y], [br.x, br.y], [bl.x, bl.y]];
+      const A = [], bv = [];
+      for (let i = 0; i < 4; i++) {
+        const [x, y] = srcPts[i];
+        const [X, Y] = dstPts[i];
+        A.push([x, y, 1, 0, 0, 0, -X * x, -X * y]);
+        bv.push(X);
+        A.push([0, 0, 0, x, y, 1, -Y * x, -Y * y]);
+        bv.push(Y);
+      }
+      const h = gaussSolve(A, bv);
+      if (!h) return null;
+      return [...h, 1]; // h[0..7], h[8]=1
+    }
+
+    function invertH(h) {
+      const [a, b, c, d, e, f, g, hh, i] = h;
+      const det = a * (e * i - f * hh) - b * (d * i - f * g) + c * (d * hh - e * g);
+      if (Math.abs(det) < 1e-12) return null;
+      return [
+        (e * i - f * hh) / det, (c * hh - b * i) / det, (b * f - c * e) / det,
+        (f * g - d * i) / det, (a * i - c * g) / det, (c * d - a * f) / det,
+        (d * hh - e * g) / det, (b * g - a * hh) / det, (a * e - b * d) / det
+      ];
+    }
+
+    function bilinear(s, sw, sh, fx, fy) {
+      const ix = Math.floor(fx), iy = Math.floor(fy);
+      const tx = fx - ix, ty = fy - iy;
+      const ix2 = Math.min(ix + 1, sw - 1), iy2 = Math.min(iy + 1, sh - 1);
+      const i00 = (iy * sw + ix) * 4, i10 = (iy * sw + ix2) * 4;
+      const i01 = (iy2 * sw + ix) * 4, i11 = (iy2 * sw + ix2) * 4;
+      const r = [], m = (1 - tx) * (1 - ty);
+      for (let c = 0; c < 4; c++)
+        r[c] = Math.round(s[i00 + c] * m + s[i10 + c] * tx * (1 - ty) + s[i01 + c] * (1 - tx) * ty + s[i11 + c] * tx * ty);
+      return r;
+    }
+
+    function drawPerspective() {
+      if (!overImg || !pts || !srcPixels) return;
+      const [tl, tr, br, bl] = pts;
+      const H = computeH(tl, tr, br, bl, srcW, srcH);
+      if (!H) return;
+      const inv = invertH(H);
+      if (!inv) return;
+
+      const xs = pts.map(p => p.x), ys = pts.map(p => p.y);
+      const x0 = Math.max(0, Math.floor(Math.min(...xs)));
+      const y0 = Math.max(0, Math.floor(Math.min(...ys)));
+      const x1 = Math.min(canvas.width - 1, Math.ceil(Math.max(...xs)));
+      const y1 = Math.min(canvas.height - 1, Math.ceil(Math.max(...ys)));
+      const W = x1 - x0 + 1, H2 = y1 - y0 + 1;
+      if (W <= 0 || H2 <= 0) return;
+
+      // Get current canvas pixels in bbox (base image already drawn)
+      const dest = ctx.getImageData(x0, y0, W, H2);
+      const d = dest.data;
+
+      for (let py = 0; py < H2; py++) {
+        for (let px = 0; px < W; px++) {
+          const cx = x0 + px, cy = y0 + py;
+          const denom = inv[6] * cx + inv[7] * cy + inv[8];
+          if (Math.abs(denom) < 1e-9) continue;
+          const sx2 = (inv[0] * cx + inv[1] * cy + inv[2]) / denom;
+          const sy2 = (inv[3] * cx + inv[4] * cy + inv[5]) / denom;
+          if (sx2 < 0 || sx2 > srcW || sy2 < 0 || sy2 > srcH) continue;
+          const [r, g, b, a] = bilinear(srcPixels, srcW, srcH, sx2, sy2);
+          if (a === 0) continue;
+          const di = (py * W + px) * 4;
+          const af = a / 255;
+          // Alpha-composite over existing pixel
+          d[di] = Math.round(r * af + d[di] * (1 - af));
+          d[di + 1] = Math.round(g * af + d[di + 1] * (1 - af));
+          d[di + 2] = Math.round(b * af + d[di + 2] * (1 - af));
+          d[di + 3] = Math.round(a + d[di + 3] * (1 - af));
+        }
+      }
+      ctx.putImageData(dest, x0, y0);
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      if (baseImg) {
+        ctx.drawImage(baseImg, 0, 0, canvas.width, canvas.height);
+      } else {
+        ctx.fillStyle = '#1a1a2e';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = 'rgba(255,255,255,0.15)';
+        ctx.font = '20px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('Upload a base image', canvas.width / 2, canvas.height / 2);
+        ctx.textAlign = 'left';
+      }
+      drawPerspective();
+    }
+
+    function cacheOverPixels() {
+      const off = document.createElement('canvas');
+      off.width = overImg.width; off.height = overImg.height;
+      const octx = off.getContext('2d');
+      octx.drawImage(overImg, 0, 0);
+      const id = octx.getImageData(0, 0, overImg.width, overImg.height);
+      srcPixels = id.data;
+      srcW = overImg.width;
+      srcH = overImg.height;
+    }
+
+    function loadImg(file, cb) {
+      const r = new FileReader();
+      r.onload = e => { const i = new Image(); i.onload = () => cb(i); i.src = e.target.result; };
+      r.readAsDataURL(file);
+    }
+
+    document.getElementById('f-base').addEventListener('change', e => {
+      if (!e.target.files[0]) return;
+      loadImg(e.target.files[0], img => { baseImg = img; draw(); });
+    });
+
+    document.getElementById('f-over').addEventListener('change', e => {
+      if (!e.target.files[0]) return;
+      loadImg(e.target.files[0], img => {
+        overImg = img;
+        cacheOverPixels();
+        pts = defaultPts();
+        draw();
+        updateHandles();
+        document.getElementById('hint').textContent = 'Drag the 4 corner handles to warp the overlay into perspective.';
+      });
+    });
+
+    function getScale() { return canvas.getBoundingClientRect().width / canvas.width; }
+
+    function updateHandles() {
+      wrap.querySelectorAll('.handle').forEach(h => h.remove());
+      if (!pts) return;
+      pts.forEach((pt, i) => {
+        const h = document.createElement('div');
+        h.className = 'handle';
+        const sf = getScale();
+        h.style.left = (pt.x * sf) + 'px';
+        h.style.top = (pt.y * sf) + 'px';
+        wrap.appendChild(h);
+        let dragging = false, ox, oy, op;
+        const down = e => {
+          dragging = true;
+          const ev = e.touches ? e.touches[0] : e;
+          ox = ev.clientX; oy = ev.clientY; op = { ...pts[i] };
+          e.preventDefault();
+        };
+        const move = e => {
+          if (!dragging) return;
+          const ev = e.touches ? e.touches[0] : e;
+          const sf2 = getScale();
+          pts[i].x = op.x + (ev.clientX - ox) / sf2;
+          pts[i].y = op.y + (ev.clientY - oy) / sf2;
+          h.style.left = (pts[i].x * sf2) + 'px';
+          h.style.top = (pts[i].y * sf2) + 'px';
+          draw();
+          e.preventDefault();
+        };
+        const up = () => { dragging = false; };
+        h.addEventListener('mousedown', down);
+        h.addEventListener('touchstart', down, { passive: false });
+        document.addEventListener('mousemove', move);
+        document.addEventListener('touchmove', move, { passive: false });
+        document.addEventListener('mouseup', up);
+        document.addEventListener('touchend', up);
+      });
+    }
+
+    window.addEventListener('resize', () => { if (pts) updateHandles(); });
+
+    document.getElementById('export-btn').addEventListener('click', () => {
+      const a = document.createElement('a');
+      a.download = 'mockup.png'; a.href = canvas.toDataURL('image/png'); a.click();
+    });
+
+    draw();
+  </script>
+
+
+  </body>
+
+</html>
