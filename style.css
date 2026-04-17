@@ -307,8 +307,14 @@ h1 {
 .btm_container {
   display: flex;
   align-items: start;
-  justify-content: end;
+  justify-content: space-between;
   padding: 36px 0;
+}
+.btm_container img {
+  width: 200px;
+  height: 230px;
+  object-fit: cover;
+  border-radius: 6px;
 }
 
 .btm_container p {
