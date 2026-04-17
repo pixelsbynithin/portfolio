@@ -166,22 +166,23 @@ window.addEventListener('resize', () => {
 
 
 
-
-
 const section2 = document.querySelector('.section2');
 const zoomContainer = document.querySelector('.zoomContainer');
 const zoomImg = document.querySelector('.zoomImg');
 const topContainer = document.querySelector('.top_container');
 const btmContainer = document.querySelector('.btm_container');
 
-// Hide and offset both containers to the left initially
 gsap.set(topContainer, { autoAlpha: 0, y: 60 });
 gsap.set(btmContainer, { autoAlpha: 0, y: 60 });
 
 let tl;
 
 function buildTimeline() {
-  if (tl) tl.kill();
+  if (tl) {
+    tl.scrollTrigger?.kill(); // ← kill the ST first
+    tl.kill();
+    tl = null;
+  }
 
   tl = gsap.timeline({
     scrollTrigger: {
@@ -190,10 +191,11 @@ function buildTimeline() {
       end: '+=150%',
       pin: true,
       scrub: 1,
+      invalidateOnRefresh: true, // ← recalculate on resize/refresh
+      anticipatePin: 1,          // ← prevents flicker when scrolling up
     }
   });
 
-  // Phase 1: zoom container to full screen
   tl.to(zoomContainer, {
     width: window.innerWidth,
     height: window.innerHeight,
@@ -209,7 +211,6 @@ function buildTimeline() {
     opacity: 1,
   }, "<");
 
-  // Phase 2: top container slides in from left at 90% of zoom
   tl.to(topContainer, {
     autoAlpha: 1,
     y: 0,
@@ -217,7 +218,6 @@ function buildTimeline() {
     ease: 'power2.out',
   }, "<80%");
 
-  // Phase 3: bottom container slides in slightly after top
   tl.to(btmContainer, {
     autoAlpha: 1,
     y: 0,
@@ -227,12 +227,16 @@ function buildTimeline() {
 }
 
 buildTimeline();
+window.addEventListener('load', () => ScrollTrigger.refresh()); // ← after fonts/images load
 
+let resizeTimer;
 window.addEventListener('resize', () => {
-  buildTimeline();
-  ScrollTrigger.refresh();
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => {
+    buildTimeline();
+    ScrollTrigger.refresh();
+  }, 250); // ← debounced, prevents mid-scroll rebuilds
 });
-
 
 
     /* ─── Animate each project card on scroll ────────────── */
