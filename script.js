@@ -179,26 +179,42 @@ window.addEventListener('resize', () => {
 
 
 
-
-
-
 const section2 = document.querySelector('.section2');
 const zoomContainer = document.querySelector('.zoomContainer');
 const zoomImg = document.querySelector('.zoomImg');
 const topContainer = document.querySelector('.top_container');
 const btmContainer = document.querySelector('.btm_container');
 
-gsap.set(topContainer, { autoAlpha: 0, y: 60 });
-gsap.set(btmContainer, { autoAlpha: 0, y: 60 });
+const isMobile = () => window.innerWidth <= 576;
+
+function resetMobileStyles() {
+  // Kill any existing timeline/ScrollTrigger
+  if (tl) {
+    tl.scrollTrigger?.kill();
+    tl.kill();
+    tl = null;
+  }
+
+  // Clear all GSAP inline styles so CSS takes over
+  gsap.set([zoomContainer, zoomImg, topContainer, btmContainer], { clearProps: "all" });
+}
 
 let tl;
 
 function buildTimeline() {
   if (tl) {
-    tl.scrollTrigger?.kill(); // ← kill the ST first
+    tl.scrollTrigger?.kill();
     tl.kill();
     tl = null;
   }
+
+  if (isMobile()) {
+    resetMobileStyles();
+    return; // ← exit early, no animation on mobile
+  }
+
+  gsap.set(topContainer, { autoAlpha: 0, y: 60 });
+  gsap.set(btmContainer, { autoAlpha: 0, y: 60 });
 
   tl = gsap.timeline({
     scrollTrigger: {
@@ -207,8 +223,8 @@ function buildTimeline() {
       end: '+=150%',
       pin: true,
       scrub: 1,
-      invalidateOnRefresh: true, // ← recalculate on resize/refresh
-      anticipatePin: 1,          // ← prevents flicker when scrolling up
+      invalidateOnRefresh: true,
+      anticipatePin: 1,
     }
   });
 
@@ -243,7 +259,7 @@ function buildTimeline() {
 }
 
 buildTimeline();
-window.addEventListener('load', () => ScrollTrigger.refresh()); // ← after fonts/images load
+window.addEventListener('load', () => ScrollTrigger.refresh());
 
 let resizeTimer;
 window.addEventListener('resize', () => {
@@ -251,8 +267,24 @@ window.addEventListener('resize', () => {
   resizeTimer = setTimeout(() => {
     buildTimeline();
     ScrollTrigger.refresh();
-  }, 250); // ← debounced, prevents mid-scroll rebuilds
+  }, 250);
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
     /* ─── Animate each project card on scroll ────────────── */
