@@ -162,7 +162,7 @@ body::-webkit-scrollbar {
 
 #scroll-trigger {
   position: relative;
-  height: 400vh;
+  height: 200vh;
   z-index: 1;
 }
 

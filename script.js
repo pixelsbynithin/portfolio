@@ -125,7 +125,8 @@ gsap.to(state, {
     scrollTrigger: {
         trigger: '#scroll-trigger',
         start: 'top top',
-        end: 'bottom bottom',
+        // end: 'bottom bottom',
+        end: '+=600',
         scrub: 1,
         onUpdate(self) {
             const p = self.progress;
